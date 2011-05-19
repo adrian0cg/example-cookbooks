@@ -1,5 +1,3 @@
-include_recipe "deploy" # get the deployment attributes
-
 node[:deploy].each do |application, deploy|
   if deploy[:application_type] != 'rails'
     Chef::Log.debug("Skipping redis::configure as application #{application} as it is not an Rails app")
@@ -10,6 +8,9 @@ node[:deploy].each do |application, deploy|
     cwd deploy[:current_path]
     command "touch tmp/restart.txt"
     action :nothing
+    only_if do
+      File.exists?(deploy[:current_path])
+    end
   end
   
   redis_server = node[:scalarium][:roles][:redis][:instances].keys.first rescue nil
