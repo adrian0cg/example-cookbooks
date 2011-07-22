@@ -20,11 +20,8 @@ node[:deploy].each do |application, deploy|
     group deploy[:group]
     owner deploy[:user]
     variables(:host => (node[:scalarium][:roles][:redis][:instances][redis_server][:private_dns_name] rescue nil))
-    
-    if deploy[:stack][:needs_reload]
-      notifies :run, resources(:execute => "restart Rails app #{application}")
-    end
-    
+    notifies :run, resources(:execute => "restart Rails app #{application}")
+
     only_if do
       File.directory?("#{deploy[:deploy_to]}/current")
     end
