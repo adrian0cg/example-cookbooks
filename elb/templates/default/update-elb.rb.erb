@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+
+ENV['JAVA_HOME'] = "<%= node[:elb][:java_home] %>" unless ENV['JAVA_HOME']
+ENV['AWS_ELB_HOME'] = "<%= node[:elb][:home] %>" unless ENV['AWS_ELB_HOME']
+ENV['EC2_URL'] = '<%= node[:elb][:ec2_url] %>' unless ENV['EC2_URL']
+ENV['EC2_REGION'] = '<%= node[:elb][:ec2_region] %>' unless ENV['EC2_REGION']
+ENV['AWS_CREDENTIAL_FILE'] = '<%= node[:elb][:credential_file] %>' unless ENV['AWS_CREDENTIAL_FILE']
+
+new_instance = ARGV[0]
+new_instance = "<%= node[:elb][:instance_to_register] %>" if new_instance.nil?
+puts "Registering #{new_instance}"
+
+VERBOSE=false
+ELB_COMMAND_PREFIX = "#{ENV['AWS_ELB_HOME']}/bin"
+ELBS = <%= node[:elb][:names].inspect %>
+
+def elb_command(command, *arguments)
+  command = "#{ELB_COMMAND_PREFIX}/#{command} #{arguments.join(" ")}"
+  puts command if VERBOSE
+  output = `#{command}`
+  puts output if VERBOSE
+  output
+end
+
+def extract_current_instances(elb)
+  instances = []
+  output = elb_command("elb-describe-instance-health", "--lb", elb)
+  output.split("\n").each do |line|
+    next if line.match(/No instances/)
+    if (instance_id = line.match(/i-[a-z0-9]+/)[0] rescue false)
+      instances << instance_id
+    end
+  end
+  instances
+end
+
+def deregister_instances(elb, instances)
+  if instances.empty?
+    puts "No instances in #{elb}"
+  else
+    output = elb_command("elb-deregister-instances-from-lb", elb, "--instances", instances.join(","))
+  end
+end
+
+def register_instances(elb, instances)
+  output = elb_command("elb-register-instances-with-lb", elb, "--instances", instances.join(","))
+end
+
+ELBS.each do |elb|
+  current_instances = extract_current_instances(elb)
+  puts "Deregistering #{current_instances.inspect} on #{elb}"
+  deregister_instances(elb, current_instances)
+  puts "Registering new instance #{new_instance} in #{elb}"
+  register_instances(elb, [new_instance])
+  puts "New ELB configuration for #{elb}:"
+  puts elb_command("elb-describe-instance-health", "--lb", elb)
+  puts ""
+end
