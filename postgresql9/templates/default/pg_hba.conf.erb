@@ -1,0 +1,22 @@
+# "local" is for Unix domain socket connections only                                                                                     
+local   all             all                                trust
+# IPv4 local connections:                                                                                                                
+host    all             all             127.0.0.1/32            trust
+# IPv6 local connections:                                                                                                                
+host    all             all             ::1/128                 trust 
+<% app_servers = node[:scalarium][:roles]['rails-app'][:instances].keys %>
+<% app_servers.each do |server| -%>
+host    all             all             <%= node[:scalarium][:roles]['rails_app'][:instances][server][:private_ip] %>/32  trust
+<% end -%>
+<% app_servers = node[:scalarium][:roles]['php-app'][:instances].keys %>
+<% app_servers.each do |server| -%>
+host    all             all             <%= node[:scalarium][:roles]['php-app'][:instances][server][:private_ip] %>/32  trust
+<% end -%>
+<% app_servers = node[:scalarium][:roles]['web'][:instances].keys %>
+<% app_servers.each do |server| -%>
+host    all             all             <%= node[:scalarium][:roles]['web'][:instances][server][:private_ip] %>/32  trust
+<% end -%>
+<% app_servers = node[:scalarium][:roles]['nodejs-app'][:instances].keys %>
+<% app_servers.each do |server| -%>
+host    all             all             <%= node[:scalarium][:roles]['nodejs-app'][:instances][server][:private_ip] %>/32  trust
+<% end -%>
