@@ -20,5 +20,5 @@ template "#{node[:postgresql9][:datadir]}/pg_hba.conf" do
   owner node[:postgresql9][:user]
   group node[:postgresql9][:group]
   mode "0644"
-  notifies :start, resources(:service => 'postgresql'), :immediate
+  notifies :restart, resources(:service => 'postgresql'), :immediate
 end
