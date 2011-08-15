@@ -5,6 +5,11 @@ service "postgresql" do
   action :start
 end
 
+execute "reload pg_hba" do
+  command "pg_ctl reload -D #{node[:postgresql9][:datadir]}"
+  action :nothing
+end
+
 
 node[:deploy].each do |application, deploy|
   execute "Creating PostgreSQL database #{application}" do
@@ -20,5 +25,5 @@ template "#{node[:postgresql9][:datadir]}/pg_hba.conf" do
   owner node[:postgresql9][:user]
   group node[:postgresql9][:group]
   mode "0644"
-  notifies :restart, resources(:service => 'postgresql'), :immediate
+  notifies :run, resources(:execute => 'reload pg_hba'), :immediate
 end
