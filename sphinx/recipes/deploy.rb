@@ -1,15 +1,16 @@
 include_recipe "deploy::default"
 
-scalarium_deploy_dir do
-  user deploy[:user]
-  group deploy[:group]
-  path deploy[:deploy_to]
-end
-
 # No need to check out the source when we're on a Rails
 # App Server.
 unless node[:scalarium][:instance][:roles].include?('rails-app')
   node[:deploy].each do |application, deploy|
+
+    scalarium_deploy_dir do
+      user deploy[:user]
+      group deploy[:group]
+      path deploy[:deploy_to]
+    end
+
     prepare_git_checkouts(:user => deploy[:user], 
                         :group => deploy[:group], 
                         :home => deploy[:home], 
