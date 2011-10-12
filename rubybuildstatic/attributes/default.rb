@@ -3,7 +3,7 @@ default[:rubybuild][:version] = '1.9.2'
 default[:rubybuild][:patch] = 'p290'
 default[:rubybuild][:basename] = "ruby-#{node[:rubybuild][:version]}-#{node[:rubybuild][:patch]}"
 default[:rubybuild][:pkgrelease] = '4'
-default[:rubybuild][:prefix] = '/root/scalarium-agent/vendor'
+default[:rubybuild][:prefix] = '/root/scalarium-agent/vendor/ruby'
 default[:rubybuild][:configure] = '--disable-install-doc'
 default[:rubybuild][:arch] = node[:kernel][:machine] == 'x86_64' ? 'amd64' : 'i386'
 default[:rubybuild][:tbz2] = "ruby1.9-static_#{node[:rubybuild][:version]}-#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]}_#{node[:rubybuild][:arch]}.tbz2"

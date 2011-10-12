@@ -33,7 +33,7 @@ execute "make install" do
   cwd "/tmp/#{node[:rubybuild][:basename]}"
 end
 
-execute "tar cfj #{node[:rubybuild][:tbz2]} #{node[:rubybuild][:prefix]}/ruby" do
+execute "tar cfj #{node[:rubybuild][:tbz2]} #{node[:rubybuild][:prefix]}" do
   cwd "/tmp/#{node[:rubybuild][:basename]}"
 end
 
