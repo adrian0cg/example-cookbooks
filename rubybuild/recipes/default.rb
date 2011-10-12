@@ -26,6 +26,30 @@ execute "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:v
   cwd "/tmp/#{node[:rubybuild][:basename]}"
 end
 
+execute "ar x #{node[:rubybuild][:deb]}" do
+  cwd "/tmp/#{node[:rubybuild][:basename]}"
+end
+
+execute 'tar xfz data.tar.gz' do
+  cwd "/tmp/#{node[:rubybuild][:basename]}"
+end
+
+execute "mkdir usr/local/include/#{node[:rubybuild][:basename]}" do
+  cwd "/tmp/#{node[:rubybuild][:basename]}"
+end
+
+execute "cp *.h *.inc usr/local/include/#{node[:rubybuild][:basename]}" do
+  cwd "/tmp/#{node[:rubybuild][:basename]}"
+end
+
+execute "tar cfz data.tar.gz usr/" do
+  cwd "/tmp/#{node[:rubybuild][:basename]}"
+end
+
+execute "ar r #{node[:rubybuild][:deb]} debian-binary control.tar.gz data.tar.gz" do
+  cwd "/tmp/#{node[:rubybuild][:basename]}"
+end
+
 template "/tmp/.s3cfg" do
   source "s3cfg.erb"
   only_if do
