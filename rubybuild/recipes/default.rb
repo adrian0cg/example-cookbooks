@@ -11,7 +11,7 @@ package "libffi-dev"
 package 'libreadline-dev'
 
 remote_file "/tmp/#{node[:rubybuild][:basename]}.tar.bz2" do
-  source "http://ftp.ruby-lang.org/pub/ruby/#{node[:rubybuild][:basename]}.tar.bz2"
+  source "http://ftp.ruby-lang.org/pub/ruby/1.9/#{node[:rubybuild][:basename]}.tar.bz2"
 end
 
 execute "tar xvfj #{node[:rubybuild][:basename]}.tar.bz2" do
