@@ -40,7 +40,7 @@ case node[:platform]
     package "libssl-dev"
 end
 
-('0.4.0' .. '0.4.7').each do |version|
+(('0.4.0' .. '0.4.9').to_a + ('0.4.10' .. '0.4.12').to_a + ['0.5.0']).each do |version|
   node[:nodejsbuild][:version] = version
   node[:nodejsbuild][:basename] = "nodejs-#{node[:nodejsbuild][:version]}"
   node[:nodejsbuild][:deb] = "nodejs_#{node[:nodejsbuild][:version]}-#{node[:nodejsbuild][:pkgrelease]}_#{node[:nodejsbuild][:arch]}.deb"
