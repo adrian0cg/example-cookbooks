@@ -22,7 +22,7 @@ execute "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:c
   cwd "/tmp/#{node[:rubybuild][:basename]}"
 end
 
-execute "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} --maintainer=mathias.meyer@scalarium.com --pkggroup=ruby --pkglicense='Ruby License' make all install" do
+execute "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} --maintainer=mathias.meyer@scalarium.com --pkggroup=ruby --pkglicense='Ruby License' --install=no make all install" do
   cwd "/tmp/#{node[:rubybuild][:basename]}"
 end
 
