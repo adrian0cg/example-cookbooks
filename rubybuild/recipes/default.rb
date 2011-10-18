@@ -47,11 +47,23 @@ execute 'tar xfz data.tar.gz' do
   cwd "/tmp/#{node[:rubybuild][:basename]}"
 end
 
-execute "mkdir usr/local/include/#{node[:rubybuild][:basename]}" do
+execute "mkdir -p usr/local/include/#{node[:rubybuild][:basename]}" do
   cwd "/tmp/#{node[:rubybuild][:basename]}"
 end
 
 execute "cp *.h *.inc usr/local/include/#{node[:rubybuild][:basename]}" do
+  cwd "/tmp/#{node[:rubybuild][:basename]}"
+end
+
+execute "cp -r /usr/local/include/ruby-1.9.1 usr/local/include/" do
+  cwd "/tmp/#{node[:rubybuild][:basename]}"
+end
+
+execute "cp -r /usr/local/lib/ruby /usr/local/lib/libruby.so.1.9.1 /usr/local/lib/libruby-static.a usr/local/lib/" do
+  cwd "/tmp/#{node[:rubybuild][:basename]}"
+end
+
+execute "cp -r /usr/local/bin/ruby usr/local/bin/" do
   cwd "/tmp/#{node[:rubybuild][:basename]}"
 end
 
