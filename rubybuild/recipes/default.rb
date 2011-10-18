@@ -1,5 +1,14 @@
 execute "apt-get update"
 
+package 'ruby-enterprise' do
+  action :purge
+end
+
+directory '/usr/local/lib/ruby' do
+  action :delete
+  recursive true
+end
+
 package "s3cmd" do
   only_if do
     node[:rubybuild][:s3][:upload]
