@@ -1,5 +1,3 @@
-include_recipe "deploy" # get the deployment attributes
-
 node[:deploy].each do |application, deploy|
   if deploy[:application_type] != 'rails'
     Chef::Log.debug("Skipping redis::configure as application #{application} as it is not an Rails app")
