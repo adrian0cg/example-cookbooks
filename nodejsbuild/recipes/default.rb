@@ -40,13 +40,15 @@ case node[:platform]
     package "libssl-dev"
 end
 
-('0.4.0' .. '0.4.7').each do |version|
+%w(0.4.12 0.5.10 0.6.1).each do |version|
   node[:nodejsbuild][:version] = version
   node[:nodejsbuild][:basename] = "nodejs-#{node[:nodejsbuild][:version]}"
   node[:nodejsbuild][:deb] = "nodejs_#{node[:nodejsbuild][:version]}-#{node[:nodejsbuild][:pkgrelease]}_#{node[:nodejsbuild][:arch]}.deb"
 
   remote_file "/tmp/#{node[:nodejsbuild][:basename]}.tar.gz" do
-    source "http://nodejs.org/dist/node-v#{node[:nodejsbuild][:version]}.tar.gz"
+    source version.to_f == 0.4 ?
+      "http://nodejs.org/dist/node-v#{node[:nodejsbuild][:version]}.tar.gz" :
+      "http://nodejs.org/dist/v#{node[:nodejsbuild][:version]}/node-v#{node[:nodejsbuild][:version]}.tar.gz"
   end
 
   execute "tar xvfz #{node[:nodejsbuild][:basename]}.tar.gz" do
