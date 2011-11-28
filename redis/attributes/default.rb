@@ -1,7 +1,7 @@
 default[:redis][:bind_address] = '0.0.0.0'
 default[:redis][:port] = 6379
 default[:redis][:timeout] = 0
-default[:redis][:version] = '2.4.2'
+default[:redis][:version] = '2.4.4'
 default[:redis][:cli][:version] = redis[:version]
 default[:redis][:prefix] = '/usr/local'
 default[:redis][:user] = 'redis'
