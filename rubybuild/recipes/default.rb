@@ -56,10 +56,6 @@ execute "cp *.h *.inc usr/local/include/#{node[:rubybuild][:basename]}" do
   cwd "/tmp/#{node[:rubybuild][:basename]}"
 end
 
-execute "cp -r /usr/local/include/#{node[:rubybuild][:basename]} usr/local/include/ruby-1.9.1/" do
-  cwd "/tmp/#{node[:rubybuild][:basename]}"
-end
-
 execute "cp -r /usr/local/include/ruby-1.9.1 usr/local/include/" do
   cwd "/tmp/#{node[:rubybuild][:basename]}"
 end
