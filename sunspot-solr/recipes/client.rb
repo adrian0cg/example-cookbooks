@@ -21,10 +21,8 @@ node[:deploy].each do |application, deploy|
     owner deploy[:user]
     variables :host => solr_server
 
-    if deploy[:stack][:needs_reload]
-      notifies :run, resources(:execute => "restart Rails app #{application}")
-    end
-    
+    notifies :run, resources(:execute => "restart Rails app #{application}")
+
     only_if do
       File.directory?("#{deploy[:deploy_to]}/current")
     end

@@ -17,7 +17,17 @@ user "redis" do
   action :create
 end
 
+directory ::File.dirname(node[:redis][:swapfile]) do
+  action :create
+  recursive true
+  owner node[:redis][:user]
+  group node[:redis][:user]
+  mode '0755'
+end
+
 directory node[:redis][:datadir] do
+  action :create
+  recursive true
   owner node[:redis][:user]
   group 'users'
   mode '0755'
@@ -34,7 +44,7 @@ enclosed_node = node
 ruby_block "Install binaries" do
   block do
     %w{redis-server redis-cli redis-benchmark redis-check-aof redis-check-dump}.each do |binary|
-      FileUtils.install "/tmp/redis-#{enclosed_node[:redis][:version]}/#{binary}",
+      FileUtils.install "/tmp/redis-#{enclosed_node[:redis][:version]}/src/#{binary}",
                         "#{enclosed_node[:redis][:prefix]}/bin", :mode => 0755
       FileUtils.chown enclosed_node[:redis][:user], 'users', "#{enclosed_node[:redis][:prefix]}/bin/#{binary}"
     end
@@ -48,11 +58,15 @@ template "/etc/init.d/redis-server" do
   mode "0755"
 end
 
-service "redis-server" do
-  service_name "redis-server"
+include_recipe "redis::service"
 
-  supports :status => false, :restart => true, :reload => false, "force-reload" => true
+service "redis-server" do
   action :enable
+end
+
+execute "ensure correct permissions" do
+  command "chown -R #{node[:redis][:user]} #{node[:redis][:datadir]} #{node[:redis][:log_file]}"
+  ignore_failure true # newley created dirs
 end
 
 template "/etc/redis.conf" do
@@ -73,3 +87,6 @@ end
 execute "monit reload" do
   action :run
 end
+
+include_recipe 'redis::ganglia'
+include_recipe 'redis::backup'

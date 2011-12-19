@@ -34,7 +34,7 @@ node[:deploy].each do |application, deploy|
     variables :application => application,
               :deploy => deploy,
               :host => host
-    if node[:scalarium][:instance][:roles].include?("rails-app") and deploy[:stack][:needs_reload]
+    if node[:scalarium][:instance][:roles].include?("rails-app")
       notifies :run, resources(:execute => "restart Rails app #{application}")
     end
   end

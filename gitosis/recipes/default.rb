@@ -1,4 +1,4 @@
-
+package "git-core"
 package "gitosis"
 
 user "git" do
