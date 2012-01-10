@@ -22,7 +22,7 @@ execute "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:c
   cwd "/tmp/#{node[:rubybuild][:basename]}"
 end
 
-execute "sed 's/#option nodynamic/option nodynamic/' ext/Setup" do
+execute "sed -i 's/#option nodynamic/option nodynamic/' ext/Setup" do
   cwd "/tmp/#{node[:rubybuild][:basename]}"
 end
 
