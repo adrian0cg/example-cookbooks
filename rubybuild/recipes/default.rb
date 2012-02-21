@@ -17,8 +17,8 @@ def perform(cmd, dir = "/tmp/#{node[:rubybuild][:basename]}")
   end
 end
 
-perform('git clone git://github.com/sstephenson/ruby-build.git', '/tmp')
-perform('env PREFIX=/tmp ./install.sh', '/tmp/ruby-build')
+#perform('git clone git://github.com/sstephenson/ruby-build.git', '/tmp')
+#perform('env PREFIX=/tmp ./install.sh', '/tmp/ruby-build')
 
 remote_file "/tmp/#{node[:rubybuild][:basename]}.tar.bz2" do
   source "http://ftp.ruby-lang.org/pub/ruby/1.9/#{node[:rubybuild][:basename]}.tar.bz2"
@@ -32,14 +32,14 @@ perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:c
 perform 'make all install'
 perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} --maintainer=mathias.meyer@scalarium.com --pkggroup=ruby --pkglicense='Ruby License' --install=no make all install"
 
-perform('rm -rf /usr/local')
-perform("/tmp/bin/ruby-build #{node[:rubybuild][:version]}-#{node[:rubybuild][:patch]} /usr/local")
+#perform('rm -rf /usr/local')
+#perform("/tmp/bin/ruby-build #{node[:rubybuild][:version]}-#{node[:rubybuild][:patch]} /usr/local")
 
-perform("ar x #{node[:rubybuild][:deb]}")
-perform('tar xfz data.tar.gz')
-perform('cp -r /usr/local/* usr/local/')
-perform("tar cfz data.tar.gz usr/")
-perform("ar r #{node[:rubybuild][:deb]} debian-binary control.tar.gz data.tar.gz")
+#perform("ar x #{node[:rubybuild][:deb]}")
+#perform('tar xfz data.tar.gz')
+#perform('cp -r /usr/local/* usr/local/')
+#perform("tar cfz data.tar.gz usr/")
+#perform("ar r #{node[:rubybuild][:deb]} debian-binary control.tar.gz data.tar.gz")
 
 template "/tmp/.s3cfg" do
   source "s3cfg.erb"
