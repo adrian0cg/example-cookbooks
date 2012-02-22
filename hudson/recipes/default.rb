@@ -13,7 +13,7 @@ execute "delete default tomcat doc root" do
 end
 
 remote_file "/var/lib/tomcat6/webapps/ROOT.war" do
-  source "http://hudson-ci.org/latest/hudson.war"
+  source "http://mirrors.jenkins-ci.org/war/latest/jenkins.war"
   mode "0664"
 end
 
