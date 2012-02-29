@@ -8,6 +8,9 @@ node[:deploy].each do |application, deploy|
     cwd deploy[:current_path]
     command "touch tmp/restart.txt"
     action :nothing
+    only_if do
+      File.exists?(deploy[:current_path])
+    end
   end
   
   redis_server = node[:scalarium][:roles][:redis][:instances].keys.first rescue nil
