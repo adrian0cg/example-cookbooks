@@ -1,1 +1,3 @@
-set[:scalarium][:deploy_user][:shell] = '/bin/bash'
+node[:deploy].each do |application, deploy|
+  set[:deploy][application][:shell] = '/bin/bash'
+end
