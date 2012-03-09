@@ -1,8 +1,5 @@
-package "openjdk-6-dbg"
-package "openjdk-6-jre"
-package "openjdk-6-jdk"
-package "openjdk-6-jre-lib"
-package "openjdk-6-jre-headless"
+include_recipe "java"
+
 package "maven2"
 package "daemon"
 package "tomcat6"
