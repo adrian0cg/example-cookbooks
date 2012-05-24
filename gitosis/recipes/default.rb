@@ -18,5 +18,5 @@ execute "ensure correct permissions for gitosis" do
 end
 
 execute "rename gitosis user to git" do
-  usermod -l git gitosis
+  command "usermod -l git gitosis"
 end
