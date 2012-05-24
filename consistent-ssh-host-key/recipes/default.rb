@@ -1,5 +1,5 @@
 service "sshd" do
-  service_name "sshd"
+  service_name "ssh"
   supports [:start, :stop, :restart]
   action :nothing
 end
