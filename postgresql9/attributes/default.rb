@@ -3,7 +3,7 @@ require 'digest/md5'
 srand
 
 
-default[:postgresql9][:version] = '9.0.0'
+default[:postgresql9][:version] = '9.1.3'
 default[:postgresql9][:prefix] = '/usr/local/pgsql'
 default[:postgresql9][:user] = "postgres"
 default[:postgresql9][:group] = "postgres"
