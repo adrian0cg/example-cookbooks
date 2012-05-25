@@ -9,4 +9,5 @@ directory node[:postgresql9][:datadir] do
   owner node[:postgresql9][:user]
   group node[:postgresql9][:group]
   action :create
+  recursive true
 end
