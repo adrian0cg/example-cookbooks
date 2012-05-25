@@ -14,7 +14,7 @@ postgresql_version_uptodate = lambda do
 end
 
 remote_file local_package do
-  source "http://ftp3.de.postgresql.org/pub/Mirrors/ftp.postgresql.org/source/v#{node[:postgresql9][:version]}/postgresql-#{node[:postgresql9][:version]}.tar.bz2"
+  source "http://ftp.postgresql.org/pub/source/v#{node[:postgresql9][:version]}/postgresql-#{node[:postgresql9][:version]}.tar.bz2"
 end
 
 execute "tar xvfj #{local_package}" do
