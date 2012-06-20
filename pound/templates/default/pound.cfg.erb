@@ -1,0 +1,43 @@
+######################################################################
+## global options:
+
+User		"www-data"
+Group		"www-data"
+#RootJail	"/chroot/pound"
+
+## Logging: (goes to syslog by default)
+##	0	no logging
+##	1	normal
+##	2	extended
+##	3	Apache-style (common log format)
+LogLevel	1
+
+## check backend every X secs:
+#Alive		30
+
+## use hardware-accelleration card supported by openssl(1):
+#SSLEngine	"<hw>"
+
+# poundctl control socket
+Control "/var/run/pound/poundctl.socket"
+
+
+ListenHTTPS
+  Address 0.0.0.0
+  Port    <%= node[:pound][:ssl_port] %>
+  xHTTP		0
+  Cert "/etc/pound/ssl.pem"
+  #CAlist "/etc/pound/ssl/gd_intermediate_bundle.crt"
+  HeadRemove "X-Forwarded-Proto"
+  HeadRemove "X-SSL-.*"
+  Ciphers "ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL"
+  # pass along https hint
+  AddHeader "X-Forwarded-Proto: https"
+  Service
+    BackEnd
+      Address 127.0.0.1
+      Port    <%= node[:pound][:ssl_proxy_port] %>
+      TimeOut 150
+    End
+  End
+End
