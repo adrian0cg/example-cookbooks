@@ -1,0 +1,9 @@
+SSL Termination on your load balancer with pound.
+
+1. Override the HAProxy template to have 2 HTTP listeners instead of one port 80 HTTP and one port 443 TCP
+   e.g. port 80 HTTP and 81 HTTP
+2. Add the `pound` recipe to the lb on setup
+3. Either paste your SSL cert in the ssl.pem.erb template of pound or put it in custom JSON and read it there
+
+At the end pound will listen on port 443, will do the SSL termination and then forward to localhost:81 which is HAProxy.
+HAProxy will forward/load-balance as usual to your application servers.
