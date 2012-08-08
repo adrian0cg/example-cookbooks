@@ -30,7 +30,7 @@ end
 
 perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]}"
 perform 'make all install'
-perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} --maintainer=mathias.meyer@scalarium.com --pkggroup=ruby --pkglicense='Ruby License' --install=no make all install"
+perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} --maintainer=development@scalarium.com --pkggroup=ruby --pkglicense='Ruby License' --install=no make all install"
 
 #perform('rm -rf /usr/local')
 #perform("/tmp/bin/ruby-build #{node[:rubybuild][:version]}-#{node[:rubybuild][:patch]} /usr/local")
