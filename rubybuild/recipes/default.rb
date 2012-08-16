@@ -1,61 +1,75 @@
 execute "apt-get update"
 
-package "s3cmd" do
-  only_if do
-    node[:rubybuild][:s3][:upload]
-  end
-end
-
 package "checkinstall"
 package "libffi-dev"
 package 'libreadline-dev'
 package 'libyaml-dev'
 
-def perform(cmd, dir = "/tmp/#{node[:rubybuild][:basename]}")
+$run_as = 'testo'
+$run_as_home = '/tmp'
+
+maintainer = 'development@scalarium.com'
+
+def manage_test_user(action)
+        user $run_as do
+          comment "User to run build tests"
+          gid "scalarium"
+          home $run_as_home
+          shell "/bin/bash"
+        end.run_action( action )
+end
+
+def current_time
+  Time.now.strftime("%Y%m%dT%H%M%S")
+end
+
+def perform(cmd, dir = "/tmp/#{node[:rubybuild][:basename]}", impersonate = $run_as)
   execute cmd do
     cwd dir
+    unless impersonate == 'root'
+      # it's not enough to set the right user.
+      environment ({'HOME' => $run_as_home})
+      user impersonate
+    end
   end
 end
 
-#perform('git clone git://github.com/sstephenson/ruby-build.git', '/tmp')
-#perform('env PREFIX=/tmp ./install.sh', '/tmp/ruby-build')
+manage_test_user(:create)
 
 remote_file "/tmp/#{node[:rubybuild][:basename]}.tar.bz2" do
   source "http://ftp.ruby-lang.org/pub/ruby/1.9/#{node[:rubybuild][:basename]}.tar.bz2"
+  owner $run_as
 end
 
-execute "tar xvfj #{node[:rubybuild][:basename]}.tar.bz2" do
-  cwd "/tmp"
-end
-
+perform "tar xvfj #{node[:rubybuild][:basename]}.tar.bz2", "/tmp"
 perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]}"
-perform 'make all install'
-perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} --maintainer=development@scalarium.com --pkggroup=ruby --pkglicense='Ruby License' --install=no make all install"
+perform "make all > /tmp/build_#{current_time} 2>&1"
+perform "make install > /tmp/build_#{current_time} 2>&1", "/tmp/#{node[:rubybuild][:basename]}", "root"
+perform "set > /tmp/env && make check > /tmp/test_#{current_time} 2>&1"
 
-#perform('rm -rf /usr/local')
-#perform("/tmp/bin/ruby-build #{node[:rubybuild][:version]}-#{node[:rubybuild][:patch]} /usr/local")
+manage_test_user(:remove)
 
-#perform("ar x #{node[:rubybuild][:deb]}")
-#perform('tar xfz data.tar.gz')
-#perform('cp -r /usr/local/* usr/local/')
-#perform("tar cfz data.tar.gz usr/")
-#perform("ar r #{node[:rubybuild][:deb]} debian-binary control.tar.gz data.tar.gz")
+perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} \
+                      --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} \
+                      --maintainer=#{maintainer} --pkggroup=ruby --pkglicense='Ruby License' \
+                      --include=./.installed.list \
+                      --install=no make install",
+                      "/tmp/#{node[:rubybuild][:basename]}",
+                      "root"
 
-template "/tmp/.s3cfg" do
-  source "s3cfg.erb"
-  only_if do
-    node[:rubybuild][:s3][:upload]
+if node[:rubybuild][:s3][:upload]
+  package "s3cmd"
+
+  template "/tmp/.s3cfg" do
+    source "s3cfg.erb"
   end
-end
 
-execute "s3cmd -c /tmp/.s3cfg put --acl-public --guess-mime-type #{node[:rubybuild][:deb]} s3://#{node[:rubybuild][:s3][:bucket]}/#{node[:rubybuild][:s3][:path]}/" do
-  cwd "/tmp/#{node[:rubybuild][:basename]}"
-  only_if do
-    node[:rubybuild][:s3][:upload]
+  execute "s3cmd -c /tmp/.s3cfg put --acl-public --guess-mime-type #{node[:rubybuild][:deb]} s3://#{node[:rubybuild][:s3][:bucket]}/#{node[:rubybuild][:s3][:path]}/" do
+    cwd "/tmp/#{node[:rubybuild][:basename]}"
   end
-end
 
-file "/tmp/.s3cfg" do
-  action :delete
-  backup false
+  file "/tmp/.s3cfg" do
+    action :delete
+    backup false
+  end
 end
