@@ -11,8 +11,8 @@
 # will build ruby1.9_1.9.3-p194.1_#{arch}.deb
 
 # compile agains latest libraries
-execute "apt-get update"
-execute "apt-get upgrade"
+execute "apt-get update -qy"
+execute "apt-get upgrade -qy"
 
 package "checkinstall"
 package "libffi-dev"
