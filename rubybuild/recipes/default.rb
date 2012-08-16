@@ -63,11 +63,11 @@ Dir.mktmpdir do |build_dir|
 
   # if this runs as root, we're going to have problems during testing
   perform "tar xvfj #{node[:rubybuild][:basename]}.tar.bz2", $run_as_home
-  perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]}"
-  perform "make -j #{node["cpu"]["total"]} all > /tmp/build_#{current_time} 2>&1"
+  perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]} > /tmp/configure_#{current_time} 2>&1"
+  perform "make -j #{node["cpu"]["total"]} > /tmp/make_#{current_time} 2>&1"
 
   # this must run as root
-  perform "make -j #{node["cpu"]["total"]} install > /tmp/build_#{current_time} 2>&1", "#{$run_as_home}/#{node[:rubybuild][:basename]}", "root"
+  perform "make -j #{node["cpu"]["total"]} install > /tmp/install_#{current_time} 2>&1", "#{$run_as_home}/#{node[:rubybuild][:basename]}", "root"
 
   # this must NOT run as root
   perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1"
