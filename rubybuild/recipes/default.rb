@@ -1,4 +1,18 @@
+#
+# To run the build process you need to set the following attributes
+#  per custom json
+#
+#  "rubybuild": {
+#                "version": "1.9.3",
+#                "patch": "p194",
+#                "pkgrelease": "1"
+#               }
+#
+# will build ruby1.9_1.9.3-p194.1_#{arch}.deb
+
+# compile agains latest libraries
 execute "apt-get update"
+execute "apt-get upgrade"
 
 package "checkinstall"
 package "libffi-dev"
