@@ -5,11 +5,6 @@ package "libffi-dev"
 package 'libreadline-dev'
 package 'libyaml-dev'
 
-$run_as = 'testo'
-$run_as_home = '/tmp'
-
-maintainer = 'development@scalarium.com'
-
 def manage_test_user(action)
         user $run_as do
           comment "User to run build tests"
@@ -23,54 +18,80 @@ def current_time
   Time.now.strftime("%Y%m%dT%H%M%S")
 end
 
-def perform(cmd, dir = "/tmp/#{node[:rubybuild][:basename]}", impersonate = $run_as)
+def perform(cmd, dir = "/#{$run_as_home}/#{node[:rubybuild][:basename]}", impersonate = $run_as)
   execute cmd do
     cwd dir
     unless impersonate == 'root'
-      # it's not enough to set the right user.
       environment ({'HOME' => $run_as_home})
       user impersonate
     end
   end
 end
 
-manage_test_user(:create)
 
-remote_file "/tmp/#{node[:rubybuild][:basename]}.tar.bz2" do
-  source "http://ftp.ruby-lang.org/pub/ruby/1.9/#{node[:rubybuild][:basename]}.tar.bz2"
-  owner $run_as
+# the whole build happens in a temp directory to avoid collitions with other builds
+Dir.mktmpdir do |build_dir|
+
+  $run_as = 'testo'
+  $run_as_home = build_dir
+
+  manage_test_user(:create)
+
+  directory $run_as_home do
+    owner $run_as
+    action :create
+  end
+
+  remote_file "#{$run_as_home}/#{node[:rubybuild][:basename]}.tar.bz2" do
+    source "http://ftp.ruby-lang.org/pub/ruby/1.9/#{node[:rubybuild][:basename]}.tar.bz2"
+    owner $run_as
+  end
+
+  # if this runs as root, we're going to have problems during testing
+  perform "tar xvfj #{node[:rubybuild][:basename]}.tar.bz2", $run_as_home
+  perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]}"
+  perform "make -j #{node["cpu"]["total"]} all > /tmp/build_#{current_time} 2>&1"
+
+  # this must run as root
+  perform "make -j #{node["cpu"]["total"]} install > /tmp/build_#{current_time} 2>&1", "#{$run_as_home}/#{node[:rubybuild][:basename]}", "root"
+
+  # this must NOT run as root
+  perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1"
+  perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} \
+                        --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} \
+                        --maintainer=#{node[:rubybuild][:maintainer]} --pkggroup=ruby --pkglicense='Ruby License' \
+                        --include=./.installed.list \
+                        --install=no \
+                        make install",
+                        "#{$run_as_home}/#{node[:rubybuild][:basename]}",
+                        "root"
+
+  if node[:rubybuild][:s3][:upload]
+    package "s3cmd"
+
+    template "/tmp/.s3cfg" do
+      source "s3cfg.erb"
+    end
+
+    execute "s3cmd -c /tmp/.s3cfg put --acl-public --guess-mime-type #{node[:rubybuild][:deb]} s3://#{node[:rubybuild][:s3][:bucket]}/#{node[:rubybuild][:s3][:path]}/" do
+      cwd "#{$run_as_home}/#{node[:rubybuild][:basename]}"
+    end
+
+    file "/tmp/.s3cfg" do
+      action :delete
+      action :delete
+      backup false
+    end
+  end
+
 end
 
-perform "tar xvfj #{node[:rubybuild][:basename]}.tar.bz2", "/tmp"
-perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]}"
-perform "make -j #{node["cpu"]["total"]} all > /tmp/build_#{current_time} 2>&1"
-perform "make -j #{node["cpu"]["total"]} install > /tmp/build_#{current_time} 2>&1", "/tmp/#{node[:rubybuild][:basename]}", "root"
-perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1"
-
-manage_test_user(:remove)
-
-perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} \
-                      --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} \
-                      --maintainer=#{maintainer} --pkggroup=ruby --pkglicense='Ruby License' \
-                      --include=./.installed.list \
-                      --install=no \
-                      make install",
-                      "/tmp/#{node[:rubybuild][:basename]}",
-                      "root"
-
-if node[:rubybuild][:s3][:upload]
-  package "s3cmd"
-
-  template "/tmp/.s3cfg" do
-    source "s3cfg.erb"
-  end
-
-  execute "s3cmd -c /tmp/.s3cfg put --acl-public --guess-mime-type #{node[:rubybuild][:deb]} s3://#{node[:rubybuild][:s3][:bucket]}/#{node[:rubybuild][:s3][:path]}/" do
-    cwd "/tmp/#{node[:rubybuild][:basename]}"
-  end
-
-  file "/tmp/.s3cfg" do
-    action :delete
-    backup false
+directory $run_as_home do
+  recursive true
+  action :delete
+  only_if do
+    node[:rubybuild][:cleanup] == 'true'
   end
 end
+
+manage_test_user(:remove) if node[:rubybuild][:cleanup] == 'true'
