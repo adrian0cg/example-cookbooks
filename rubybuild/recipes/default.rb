@@ -43,9 +43,9 @@ end
 
 perform "tar xvfj #{node[:rubybuild][:basename]}.tar.bz2", "/tmp"
 perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]}"
-perform "make all > /tmp/build_#{current_time} 2>&1"
-perform "make install > /tmp/build_#{current_time} 2>&1", "/tmp/#{node[:rubybuild][:basename]}", "root"
-perform "set > /tmp/env && make check > /tmp/test_#{current_time} 2>&1"
+perform "make -j #{node["cpu"]["total"]} all > /tmp/build_#{current_time} 2>&1"
+perform "make -j #{node["cpu"]["total"]} install > /tmp/build_#{current_time} 2>&1", "/tmp/#{node[:rubybuild][:basename]}", "root"
+perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1"
 
 manage_test_user(:remove)
 
@@ -53,7 +53,8 @@ perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:v
                       --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} \
                       --maintainer=#{maintainer} --pkggroup=ruby --pkglicense='Ruby License' \
                       --include=./.installed.list \
-                      --install=no make install",
+                      --install=no \
+                      make install",
                       "/tmp/#{node[:rubybuild][:basename]}",
                       "root"
 
