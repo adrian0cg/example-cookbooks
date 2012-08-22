@@ -80,15 +80,7 @@ Dir.mktmpdir do |build_dir|
                         "#{$run_as_home}/#{node[:rubybuild][:basename]}",
                         "root"
 
-  directory "/tmp/latest_deb" do
-    owner $run_as
-    action :create
-    only_if  do 
-      File.directory?("/tmp/latest_deb") 
-    end
-  end
-
-  perform "cp -f #{$run_as_home}/#{node[:rubybuild][:basename]}/*.deb /tmp/latest_deb "
+  perform "cp #{$run_as_home}/#{node[:rubybuild][:basename]}/*.deb /tmp/ "
 
   if node[:rubybuild][:s3][:upload]
     package "s3cmd"
@@ -98,7 +90,7 @@ Dir.mktmpdir do |build_dir|
     end
 
     execute "s3cmd -c /tmp/.s3cfg put --acl-public --guess-mime-type #{node[:rubybuild][:deb]} s3://#{node[:rubybuild][:s3][:bucket]}/#{node[:rubybuild][:s3][:path]}/" do
-      cwd "/tmp/latest_deb"
+      cwd "#{$run_as_home}/#{node[:rubybuild][:basename]}"
     end
 
     file "/tmp/.s3cfg" do
