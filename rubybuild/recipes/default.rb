@@ -32,12 +32,17 @@ def current_time
   Time.now.strftime("%Y%m%dT%H%M%S")
 end
 
-def perform(cmd, dir = "/#{$run_as_home}/#{node[:rubybuild][:basename]}", impersonate = $run_as)
+def perform(cmd, options = {})
+  opt = {
+          :dir => "/#{$run_as_home}/#{node[:rubybuild][:basename]}",
+          :impersonate => $run_as
+        }.update(options)
+
   execute cmd do
-    cwd dir
-    unless impersonate == 'root'
+    cwd opt[:dir]
+    unless opt[:impersonate] == 'root'
       environment ({'HOME' => $run_as_home})
-      user impersonate
+      user opt[:impersonate]
     end
   end
 end
@@ -62,25 +67,25 @@ Dir.mktmpdir do |build_dir|
   end
 
   # if this runs as root, we're going to have problems during testing
-  perform "tar xvfj #{node[:rubybuild][:basename]}.tar.bz2", $run_as_home
+  perform "tar xvfj #{node[:rubybuild][:basename]}.tar.bz2", {:dir => $run_as_home}
   perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]} > /tmp/configure_#{current_time} 2>&1"
   perform "make -j #{node["cpu"]["total"]} > /tmp/make_#{current_time} 2>&1"
 
   # this must run as root
-  perform "make -j #{node["cpu"]["total"]} install > /tmp/install_#{current_time} 2>&1", "#{$run_as_home}/#{node[:rubybuild][:basename]}", "root"
+  perform "make -j #{node["cpu"]["total"]} install > /tmp/install_#{current_time} 2>&1", {:impersonate => "root"}
 
   # this must NOT run as root
   perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1"
+
   perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} \
                         --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} \
                         --maintainer=#{node[:rubybuild][:maintainer]} --pkggroup=ruby --pkglicense='Ruby License' \
                         --include=./.installed.list \
                         --install=no \
                         make install",
-                        "#{$run_as_home}/#{node[:rubybuild][:basename]}",
-                        "root"
+                        {:impersonate => "root"}
 
-  perform "cp #{$run_as_home}/#{node[:rubybuild][:basename]}/*.deb /tmp/ "
+  perform "cp -f *.deb /tmp/ ", {:impersonate => "root"}
 
   if node[:rubybuild][:s3][:upload]
     package "s3cmd"
