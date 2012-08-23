@@ -75,7 +75,7 @@ Dir.mktmpdir do |build_dir|
   perform "make -j #{node["cpu"]["total"]} install > /tmp/install_#{current_time} 2>&1", {:impersonate => "root"}
 
   # this must NOT run as root
-  perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1"
+#  perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1"
 
   perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} \
                         --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} \
