@@ -87,7 +87,7 @@ Dir.mktmpdir do |build_dir|
 
   perform "cp -f *.deb /tmp/ ", {:impersonate => "root"}
 
-  if node[:rubybuild][:s3][:upload]
+  if node[:rubybuild][:s3][:upload] == 'true'
     package "s3cmd"
 
     template "/tmp/.s3cfg" do
