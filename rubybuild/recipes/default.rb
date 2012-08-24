@@ -51,7 +51,7 @@ end
 # the whole build happens in a temp directory to avoid collitions with other builds
 Dir.mktmpdir do |build_dir|
 
-  >>>>> Methoden Param  >>>>>>>>>>   $run_as_home = build_dir
+  $run_as_home = build_dir  # not good!!!
 
   manage_test_user(:create, build_dir)
 
