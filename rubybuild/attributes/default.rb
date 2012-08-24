@@ -1,6 +1,6 @@
 default[:rubybuild] = {}
 default[:rubybuild][:maintainer] = "development@scalarium.com"
-default[:rubybuild][:user] = pkgbuildera
+default[:rubybuild][:user] = 'pkgbuildera'
 default[:rubybuild][:version] = '1.9.2'
 default[:rubybuild][:patch] = 'p180'
 default[:rubybuild][:basename] = "ruby-#{node[:rubybuild][:version]}-#{node[:rubybuild][:patch]}"
