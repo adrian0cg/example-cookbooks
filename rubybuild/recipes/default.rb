@@ -74,7 +74,7 @@ Dir.mktmpdir do |target_dir|
   perform "make -j #{node["cpu"]["total"]} install > /tmp/install_#{current_time} 2>&1", :cwd => build_dir, :user => "root"
 
   # this must NOT run as root
-#  perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1", :cwd => build_dir
+  perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1", :cwd => build_dir
 
   perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} \
                         --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} \
@@ -84,8 +84,6 @@ Dir.mktmpdir do |target_dir|
                         make install",
                         :cwd => build_dir,
                         :user => "root"
-
-  perform "cp -f *.deb /tmp/ ", :user => "root", :cwd => build_dir
 
   if node[:rubybuild][:s3][:upload]
     package "s3cmd"
