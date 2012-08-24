@@ -10,7 +10,7 @@
 #
 # will build ruby1.9_1.9.3-p194.1_#{arch}.deb
 
-# compile agains latest libraries
+# compile against latest libraries
 execute "apt-get update -qy"
 execute "apt-get upgrade -qy"
 
@@ -19,11 +19,11 @@ package "libffi-dev"
 package 'libreadline-dev'
 package 'libyaml-dev'
 
-def manage_test_user(action, cwd)
+def manage_test_user(action, cwd = nil)
   user node[:rubybuild][:user] do
-    comment "User to run build tests"
+    comment "User for running build tests"
     gid "scalarium"
-    home cwd
+    home cwd unless cwd.nil?
     shell "/bin/bash"
   end.run_action( action )
 end
@@ -34,14 +34,14 @@ end
 
 def perform(cmd, options = {})
   options = {
-          :cwd => "/#{$run_as_home}/#{node[:rubybuild][:basename]}",
-          :user => node[:rubybuild][:user]
-        }.update(options)
+              :cwd => "/tmp",
+              :user => node[:rubybuild][:user]
+            }.update(options)
 
   execute cmd do
     cwd options[:cwd]
     unless options[:user] == 'root'
-      environment ({'HOME' => $run_as_home})
+      environment ({'HOME' => options[:cwd]})
       user options[:user]
     end
   end
@@ -49,32 +49,32 @@ end
 
 
 # the whole build happens in a temp directory to avoid collitions with other builds
-Dir.mktmpdir do |build_dir|
+Dir.mktmpdir do |target_dir|
 
-  $run_as_home = build_dir  # not good!!!
+  manage_test_user(:create, target_dir)
 
-  manage_test_user(:create, build_dir)
-
-  directory $run_as_home do
+  directory target_dir do
     owner node[:rubybuild][:user]
     action :create
   end
 
-  remote_file "#{$run_as_home}/#{node[:rubybuild][:basename]}.tar.bz2" do
+  remote_file "#{target_dir}/#{node[:rubybuild][:basename]}.tar.bz2" do
     source "http://ftp.ruby-lang.org/pub/ruby/1.9/#{node[:rubybuild][:basename]}.tar.bz2"
     owner node[:rubybuild][:user]
   end
 
   # if this runs as root, we're going to have problems during testing
-  perform "tar xvfj #{node[:rubybuild][:basename]}.tar.bz2", :cwd => $run_as_home
-  perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]} > /tmp/configure_#{current_time} 2>&1"
-  perform "make -j #{node["cpu"]["total"]} > /tmp/make_#{current_time} 2>&1"
+  perform "tar xvfj #{node[:rubybuild][:basename]}.tar.bz2", :cwd => target_dir
+
+  build_dir = "#{target_dir}/#{node[:rubybuild][:basename]}"
+  perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]} > /tmp/configure_#{current_time} 2>&1", :cwd => build_dir
+  perform "make -j #{node["cpu"]["total"]} > /tmp/make_#{current_time} 2>&1", :cwd => build_dir
 
   # this must run as root
-  perform "make -j #{node["cpu"]["total"]} install > /tmp/install_#{current_time} 2>&1", :user => "root"
+  perform "make -j #{node["cpu"]["total"]} install > /tmp/install_#{current_time} 2>&1", :cwd => build_dir, :user => "root"
 
   # this must NOT run as root
-#  perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1"
+#  perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1", :cwd => build_dir
 
   perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} \
                         --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} \
@@ -82,9 +82,10 @@ Dir.mktmpdir do |build_dir|
                         --include=./.installed.list \
                         --install=no \
                         make install",
+                        :cwd => build_dir,
                         :user => "root"
 
-  perform "cp -f *.deb /tmp/ ", {:user => "root"}
+  perform "cp -f *.deb /tmp/ ", :user => "root", :cwd => build_dir
 
   if node[:rubybuild][:s3][:upload]
     package "s3cmd"
@@ -94,7 +95,7 @@ Dir.mktmpdir do |build_dir|
     end
 
     execute "s3cmd -c /tmp/.s3cfg put --acl-public --guess-mime-type #{node[:rubybuild][:deb]} s3://#{node[:rubybuild][:s3][:bucket]}/#{node[:rubybuild][:s3][:path]}/" do
-      cwd "#{$run_as_home}/#{node[:rubybuild][:basename]}"
+      cwd build_dir
     end
 
     file "/tmp/.s3cfg" do
@@ -103,14 +104,13 @@ Dir.mktmpdir do |build_dir|
     end
   end
 
-  directory $run_as_home do
+  directory build_dir do
     recursive true
     action :delete
     only_if do
       node[:rubybuild][:cleanup]
+    end
   end
-end
-
 end
 
 manage_test_user(:remove) if node[:rubybuild][:cleanup]
