@@ -19,13 +19,13 @@ package "libffi-dev"
 package 'libreadline-dev'
 package 'libyaml-dev'
 
-def manage_test_user(action)
-        user $run_as do
-          comment "User to run build tests"
-          gid "scalarium"
-          home $run_as_home
-          shell "/bin/bash"
-        end.run_action( action )
+def manage_test_user(action, cwd)
+  user node[:rubybuild][:user] do
+    comment "User to run build tests"
+    gid "scalarium"
+    home cwd
+    shell "/bin/bash"
+  end.run_action( action )
 end
 
 def current_time
@@ -33,16 +33,16 @@ def current_time
 end
 
 def perform(cmd, options = {})
-  opt = {
-          :dir => "/#{$run_as_home}/#{node[:rubybuild][:basename]}",
-          :impersonate => $run_as
+  options = {
+          :cwd => "/#{$run_as_home}/#{node[:rubybuild][:basename]}",
+          :user => node[:rubybuild][:user]
         }.update(options)
 
   execute cmd do
-    cwd opt[:dir]
-    unless opt[:impersonate] == 'root'
+    cwd options[:cwd]
+    unless options[:user] == 'root'
       environment ({'HOME' => $run_as_home})
-      user opt[:impersonate]
+      user options[:user]
     end
   end
 end
@@ -51,19 +51,18 @@ end
 # the whole build happens in a temp directory to avoid collitions with other builds
 Dir.mktmpdir do |build_dir|
 
-  $run_as = 'testo'
-  $run_as_home = build_dir
+  >>>>> Methoden Param  >>>>>>>>>>   $run_as_home = build_dir
 
-  manage_test_user(:create)
+  manage_test_user(:create, build_dir)
 
   directory $run_as_home do
-    owner $run_as
+    owner node[:rubybuild][:user]
     action :create
   end
 
   remote_file "#{$run_as_home}/#{node[:rubybuild][:basename]}.tar.bz2" do
     source "http://ftp.ruby-lang.org/pub/ruby/1.9/#{node[:rubybuild][:basename]}.tar.bz2"
-    owner $run_as
+    owner node[:rubybuild][:user]
   end
 
   # if this runs as root, we're going to have problems during testing
@@ -72,7 +71,7 @@ Dir.mktmpdir do |build_dir|
   perform "make -j #{node["cpu"]["total"]} > /tmp/make_#{current_time} 2>&1"
 
   # this must run as root
-  perform "make -j #{node["cpu"]["total"]} install > /tmp/install_#{current_time} 2>&1", {:impersonate => "root"}
+  perform "make -j #{node["cpu"]["total"]} install > /tmp/install_#{current_time} 2>&1", {:user => "root"}
 
   # this must NOT run as root
 #  perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1"
@@ -83,11 +82,11 @@ Dir.mktmpdir do |build_dir|
                         --include=./.installed.list \
                         --install=no \
                         make install",
-                        {:impersonate => "root"}
+                        {:user => "root"}
 
-  perform "cp -f *.deb /tmp/ ", {:impersonate => "root"}
+  perform "cp -f *.deb /tmp/ ", {:user => "root"}
 
-  if node[:rubybuild][:s3][:upload] == 'true'
+  if node[:rubybuild][:s3][:upload]
     package "s3cmd"
 
     template "/tmp/.s3cfg" do
@@ -100,19 +99,18 @@ Dir.mktmpdir do |build_dir|
 
     file "/tmp/.s3cfg" do
       action :delete
-      action :delete
       backup false
     end
   end
 
-end
-
-directory $run_as_home do
-  recursive true
-  action :delete
-  only_if do
-    node[:rubybuild][:cleanup] == 'true'
+  directory $run_as_home do
+    recursive true
+    action :delete
+    only_if do
+      node[:rubybuild][:cleanup]
   end
 end
 
-manage_test_user(:remove) if node[:rubybuild][:cleanup] == 'true'
+end
+
+manage_test_user(:remove) if node[:rubybuild][:cleanup]
