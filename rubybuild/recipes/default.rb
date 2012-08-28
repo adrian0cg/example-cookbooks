@@ -1,18 +1,6 @@
-#
-# To run the build process you need to set the following attributes
-#  per custom json
-#
-#  "rubybuild": {
-#                "version": "1.9.3",
-#                "patch": "p194",
-#                "pkgrelease": "1"
-#               }
-#
-# will build ruby1.9_1.9.3-p194.1_#{arch}.deb
-
 # compile against latest libraries
-execute "apt-get update -qy"
-execute "apt-get upgrade -qy"
+execute 'apt-get update -qy'
+execute 'apt-get upgrade -qy'
 
 package "checkinstall"
 package "libffi-dev"
@@ -21,10 +9,9 @@ package 'libyaml-dev'
 
 def manage_test_user(action, cwd = nil)
   user node[:rubybuild][:user] do
-    comment "User for running build tests"
-    gid "scalarium"
-    home cwd unless cwd.nil?
-    shell "/bin/bash"
+    comment 'User for running build tests'
+    home cwd unless cwd.nil? || cwd.empty?
+    shell '/bin/bash'
   end.run_action( action )
 end
 
@@ -34,9 +21,9 @@ end
 
 def perform(cmd, options = {})
   options = {
-              :cwd => "/tmp",
-              :user => node[:rubybuild][:user]
-            }.update(options)
+    :cwd => '/tmp',
+    :user => node[:rubybuild][:user]
+  }.update(options)
 
   execute cmd do
     cwd options[:cwd]
@@ -83,20 +70,20 @@ Dir.mktmpdir do |target_dir|
                         --install=no \
                         make install",
                         :cwd => build_dir,
-                        :user => "root"
+                        :user => 'root'
 
   if node[:rubybuild][:s3][:upload]
-    package "s3cmd"
+    package 's3cmd'
 
-    template "/tmp/.s3cfg" do
-      source "s3cfg.erb"
+    template '/tmp/.s3cfg' do
+      source 's3cfg.erb'
     end
 
     execute "s3cmd -c /tmp/.s3cfg put --acl-public --guess-mime-type #{node[:rubybuild][:deb]} s3://#{node[:rubybuild][:s3][:bucket]}/#{node[:rubybuild][:s3][:path]}/" do
       cwd build_dir
     end
 
-    file "/tmp/.s3cfg" do
+    file '/tmp/.s3cfg' do
       action :delete
       backup false
     end
