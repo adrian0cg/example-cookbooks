@@ -7,6 +7,7 @@ default[:rubybuild][:prefix] = '/usr/local'
 default[:rubybuild][:configure] = '--enable-shared --disable-install-doc'
 default[:rubybuild][:arch] = node[:kernel][:machine] == 'x86_64' ? 'amd64' : 'i386'
 default[:rubybuild][:deb] = "ruby1.9_#{node[:rubybuild][:version]}-#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]}_#{node[:rubybuild][:arch]}.deb"
+default[:rubybuild][:rpm] = "ruby19-#{node[:rubybuild][:version]}-#{node[:rubybuild][:patch]}-#{node[:rubybuild][:pkgrelease]}.#{node[:kernel][:machine]}.rpm"
 default[:rubybuild][:s3] = {}
 default[:rubybuild][:s3][:upload] = false
 default[:rubybuild][:s3][:bucket] = ''
