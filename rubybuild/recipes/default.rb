@@ -77,7 +77,7 @@ when "centos","redhat","scientific","oracle","amazon"
     code <<-EOH
       mkdir /tmp/ruby-install-dir
       make all install DESTDIR=/tmp/ruby-install-dir
-      fpm -s dir -t rpm -n ruby19 -v #{node[:rubybuild][:version]}.#{node[:rubybuild][:pkgrelease]} -C /tmp/ruby-install-dir -p #{node[:rubybuild][:rpm]} usr
+      fpm -s dir -t rpm -n ruby19 -v #{node[:rubybuild][:version]} --iteration #{node[:rubybuild][:pkgrelease]} -C /tmp/ruby-install-dir -p #{node[:rubybuild][:rpm]} -m "<daniel.huesch@scalarium.com>" -a "#{node[:kernel][:machine]}" usr
 
       rm -rf /tmp/ruby-install-dir
     EOH
