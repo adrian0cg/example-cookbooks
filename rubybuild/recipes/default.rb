@@ -86,22 +86,22 @@ when "centos","redhat","scientific","oracle","amazon"
     end
   end
 
-  template "/tmp/.s3cfg" do
-    source "s3cfg.erb"
-    only_if do
-      node[:rubybuild][:s3][:upload]
-    end
-  end
+  #template "/tmp/.s3cfg" do
+  #  source "s3cfg.erb"
+  #  only_if do
+  #    node[:rubybuild][:s3][:upload]
+  #  end
+  #end
 
-  execute "s3cmd -c /tmp/.s3cfg put --acl-public --guess-mime-type #{node[:rubybuild][:rpm]} s3://#{node[:rubybuild][:s3][:bucket]}/#{node[:rubybuild][:s3][:path]}/" do
-    cwd "/tmp/#{node[:rubybuild][:basename]}"
-    only_if do
-      node[:rubybuild][:s3][:upload]
-    end
-  end
+  #execute "s3cmd -c /tmp/.s3cfg put --acl-public --guess-mime-type #{node[:rubybuild][:rpm]} s3://#{node[:rubybuild][:s3][:bucket]}/#{node[:rubybuild][:s3][:path]}/" do
+  #  cwd "/tmp/#{node[:rubybuild][:basename]}"
+  #  only_if do
+  #    node[:rubybuild][:s3][:upload]
+  #  end
+  #end
 
-  file "/tmp/.s3cfg" do
-    action :delete
-    backup false
-  end
+  #file "/tmp/.s3cfg" do
+  #  action :delete
+  #  backup false
+  #end
 end
