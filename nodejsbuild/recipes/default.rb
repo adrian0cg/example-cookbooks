@@ -54,7 +54,7 @@ node[:nodejsbuild][:versions_to_build].each do |version|
   remote_file "/tmp/#{basename}.tar.gz" do
     # Anything older than 0.5.1 will be in /dist - otherwise, they're in
     # something like /v0.5.1
-    if version.to_f < 0.5 || version != '0.5.1'
+    if version.to_f < 0.5 || version == '0.5.0'
       source "http://nodejs.org/dist/node-v#{version}.tar.gz"
     else
       source "http://nodejs.org/dist/v#{version}/node-v#{version}.tar.gz"
