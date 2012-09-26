@@ -9,12 +9,12 @@ package 's3cmd' do
   end
 end
 
-node[:buildengine][package_to_build][:build_requirements].split.each do |pkg|
+node[:buildengine][:monit][:build_requirements].split.each do |pkg|
   package pkg
 end
 
 def manage_test_user (action, cwd=nil)
-  user node[:buildengine][package_to_build][:user] do
+  user node[:buildengine][:monit][:user] do
     comment 'user for running build tests'
     home cwd unless cwd.nil? || cwd.empty?
     shell '/bin/bash'
@@ -24,7 +24,7 @@ end
 def perform (cmd, options={})
   options = {
     :cwd => '/tmp',
-    :user => node[:buildengine][package_to_build][:user]
+    :user => node[:buildengine][:monit][:user]
   }.update(options)
 
   execute cmd do
@@ -40,40 +40,40 @@ Dir.mktmpdir do |build_base_dir|
   manage_test_user(:create, build_base_dir)
 
   directory build_base_dir do
-    owner node[:buildengine][package_to_build][:user]
+    owner node[:buildengine][:monit][:user]
     action :create
   end
 
-  remote_file "#{build_base_dir}/#{node[:buildengine][package_to_build][:download_package]}" do
-    source "#{node[:buildengine][package_to_build][:download_base_url]}/#{node[:buildengine][:monit][:download_package]}"
-    owner node[:buildengine][package_to_build][:user]
+  remote_file "#{build_base_dir}/#{node[:buildengine][:monit][:download_package]}" do
+    source "#{node[:buildengine][:monit][:download_base_url]}/#{node[:buildengine][:monit][:download_package]}"
+    owner node[:buildengine][:monit][:user]
   end
 
-  perform "tar xvfz #{node[:buildengine][package_to_build][:download_package]}",
+  perform "tar xvfz #{node[:buildengine][:monit][:download_package]}",
           :cwd => build_base_dir
 
-  build_dir = "#{build_base_dir}/#{node[:buildengine][package_to_build][:unpacked_dir]}
-  perform "./configure --prefix=#{node[:buildengine][:package_to_build][:prefix]} \
-                       #{node[:buildengine][package_to_build][:configure_options]}",
+  build_dir = "#{build_base_dir}/#{node[:buildengine][:monit][:unpacked_dir]}
+  perform "./configure --prefix=#{node[:buildengine][::monit][:prefix]} \
+                       #{node[:buildengine][:monit][:configure_options]}",
            :cwd => build_dir
 
   perform "make -j #{node['cpu']['total']}", :cwd => build_dir
 
-  pkgrelease = "#{node[:buildengine][package_to_build][:package_release]}"
-  if node[:buildengine][package_to_build].attribute?(:patchlevel)
-    pkgrelease = "#{node[:buildengine][package_to_build][:patchlevel]}.#{node[:buildengine][package_to_build][:package_release]}"
+  pkgrelease = "#{node[:buildengine][:monit][:package_release]}"
+  if node[:buildengine][:monit].attribute?(:patchlevel)
+    pkgrelease = "#{node[:buildengine][:monit][:patchlevel]}.#{node[:buildengine][:monit][:package_release]}"
   end
 
   pkglicense = ''
-  if node[:buildengine][package_to_build].attribute?(:package_license)
-    pkglicense = "--pkglicense=#{node[:buildengine][package_to_build][:package_license]}"
+  if node[:buildengine][:monit].attribute?(:package_license)
+    pkglicense = "--pkglicense=#{node[:buildengine][:monit][:package_license]}"
   end
 
-  perform "checkinstall -y -D --pkgname=#{node[:buildengine][package_to_build][:name]} \
-                        --pkgversion=#{node[:buildengine][package_to_build][:version]} \
+  perform "checkinstall -y -D --pkgname=#{node[:buildengine][:monit][:name]} \
+                        --pkgversion=#{node[:buildengine][:monit][:version]} \
                         --pkgrelease=#{pkgrelease} \
-                        --maintainer=#{node[:buildengine][package_to_build][:package_maintainer]} \
-                        --pkggroup=#{node[:buildengine][package_to_build][package_group]} \
+                        --maintainer=#{node[:buildengine][:monit][:package_maintainer]} \
+                        --pkggroup=#{node[:buildengine][:monit][package_group]} \
                         #{pkglicense} make all install", :cwd => build_dir
 
   template "#{build_base_dir}/.s3cfg" do
