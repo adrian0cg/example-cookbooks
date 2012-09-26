@@ -13,13 +13,11 @@ default[:nodejsbuild][:s3][:aws_access_key] = ""
 default[:nodejsbuild][:s3][:aws_secret_access_key] = ""
 
 default[:nodejsbuild][:versions_to_build] = [
-  '0.4.0',
-  '0.4.1',
-  '0.4.2',
-  '0.4.3',
-  '0.4.4',
-  '0.4.5',
-  '0.4.6',
-  '0.4.7',
+  '0.4.12',
+  '0.5.6',
+  '0.5.7',
+  '0.5.8',
+  '0.5.9',
+  '0.5.10',
   '0.6.1'
 ]
