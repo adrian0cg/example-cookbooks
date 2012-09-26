@@ -83,6 +83,7 @@ node[:nodejsbuild][:versions_to_build].each do |version|
     only_if do
       node[:nodejsbuild][:s3][:upload]
     end
+    action :nothing
   end
 
   case node[:platform]
@@ -99,6 +100,7 @@ node[:nodejsbuild][:versions_to_build].each do |version|
       only_if do
         node[:nodejsbuild][:s3][:upload]
       end
+      action :nothing
     end
   end
 
