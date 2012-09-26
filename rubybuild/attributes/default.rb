@@ -1,6 +1,6 @@
 default[:rubybuild] = {}
-default[:rubybuild][:version] = '1.9.2'
-default[:rubybuild][:patch] = 'p180'
+default[:rubybuild][:version] = '1.9.3'
+default[:rubybuild][:patch] = 'p194'
 default[:rubybuild][:basename] = "ruby-#{node[:rubybuild][:version]}-#{node[:rubybuild][:patch]}"
 default[:rubybuild][:pkgrelease] = '3'
 default[:rubybuild][:prefix] = '/usr/local'
