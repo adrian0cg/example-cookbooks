@@ -52,7 +52,13 @@ node[:nodejsbuild][:versions_to_build].each do |version|
   rpm      = "nodejs-#{version}-#{node[:nodejsbuild][:pkgrelease]}.#{node[:kernel][:machine]}.rpm"
 
   remote_file "/tmp/#{basename}.tar.gz" do
-    source "http://nodejs.org/dist/node-v#{version}.tar.gz"
+    # Anything older than 0.5.1 will be in /dist - otherwise, they're in
+    # something like /v0.5.1
+    if version.to_f < 0.5 || version != '0.5.1'
+      source "http://nodejs.org/dist/node-v#{version}.tar.gz"
+    else
+      source "http://nodejs.org/dist/v#{version/node-v#{version}.tar.gz"
+    end
   end
 
   execute "tar xvfz #{basename}.tar.gz" do
