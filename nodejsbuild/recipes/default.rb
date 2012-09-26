@@ -57,7 +57,7 @@ node[:nodejsbuild][:versions_to_build].each do |version|
     if version.to_f < 0.5 || version != '0.5.1'
       source "http://nodejs.org/dist/node-v#{version}.tar.gz"
     else
-      source "http://nodejs.org/dist/v#{version/node-v#{version}.tar.gz"
+      source "http://nodejs.org/dist/v#{version}/node-v#{version}.tar.gz"
     end
   end
 
