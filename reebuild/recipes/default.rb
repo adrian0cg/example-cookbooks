@@ -17,7 +17,7 @@ bash "make temp directory and compile" do
   code <<-EOH
     mkdir /tmp/ree-install-dir
     ./installer --auto #{node[:reebuild][:prefix]} --dont-install-useful-gems --no-dev-docs --destdir /tmp/ree-install-dir
-    fpm -s dir -t rpm -n ruby19 -v #{node[:reebuild][:version]} --iteration #{node[:reebuild][:pkgrelease]} -C /tmp/ree-install-dir -p #{node[:reebuild][:rpm]} -m "<daniel.huesch@scalarium.com>" -a "#{node[:kernel][:machine]}" usr
+    fpm -s dir -t rpm -n ruby-enterprise -v #{node[:reebuild][:version]} --iteration #{node[:reebuild][:pkgrelease]} -C /tmp/ree-install-dir -p #{node[:reebuild][:rpm]} -m "<daniel.huesch@scalarium.com>" -a "#{node[:kernel][:machine]}" usr
 
     rm -rf /tmp/ree-install-dir
   EOH
