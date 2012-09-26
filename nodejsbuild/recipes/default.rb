@@ -72,7 +72,7 @@ node[:nodejsbuild][:versions_to_build].each do |version|
       code <<-EOH
         mkdir /tmp/nodejs-install-dir
         make all install DESTDIR=/tmp/nodejs-install-dir
-        fpm -s dir -t rpm -n nodejs -v #{version} -C /tmp/nodejs-install-dir -p #{rpm} --iteration #{node[:rubybuild][:pkgrelease]} -m "<daniel.huesch@scalarium.com>" -a "#{node[:platform]}" --license 'node.js License' --vendor "Peritor GmbH" --url "http://nodejs.org" usr
+        fpm -s dir -t rpm -n nodejs -v #{version} -C /tmp/nodejs-install-dir -p #{rpm} --iteration #{node[:rubybuild][:pkgrelease]} -m "<daniel.huesch@scalarium.com>" -a "#{node[:kernel][:machine]}" --license 'node.js License' --vendor "Peritor GmbH" --url "http://nodejs.org" usr
         rm -rf /tmp/nodejs-install-dir
       EOH
     end
