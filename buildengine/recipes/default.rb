@@ -9,9 +9,10 @@ package 's3cmd' do
   end
 end
 
-node[:buildengine][:monit][:build_requirements].split.each do |pkg|
-  package pkg
-end
+package "checkinstall"
+package "libpam0g-dev"
+package "make"
+package "gcc"
 
 def manage_test_user (action, cwd=nil)
   user node[:buildengine][:monit][:user] do
