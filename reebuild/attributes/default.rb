@@ -1,0 +1,14 @@
+default[:reebuild] = {}
+default[:reebuild][:version] = '1.8.7'
+default[:reebuild][:phusion_version] = '2012.02'
+default[:reebuild][:basename] = "ruby-enterprise-#{node[:reebuild][:version]}-#{node[:reebuild][:phusion_version]}"
+default[:reebuild][:pkgrelease] = '1'
+default[:reebuild][:prefix] = '/usr/local'
+default[:reebuild][:configure] = '--auto #{node[:reebuild][:prefix]} --dont-install-useful-gems --no-dev-docs'
+default[:reebuild][:rpm] = "ruby-enterprise-#{node[:reebuild][:version]}-#{node[:reebuild][:phusion_version]}-#{node[:reebuild][:pkgrelease]}.#{node[:kernel][:machine]}.rpm"
+default[:reebuild][:s3] = {}
+default[:reebuild][:s3][:upload] = false
+default[:reebuild][:s3][:bucket] = ''
+default[:reebuild][:s3][:path] = "#{node[:platform]}/#{node[:platform_version]}"
+default[:reebuild][:s3][:aws_access_key] = ""
+default[:reebuild][:s3][:aws_secret_access_key] = ""
