@@ -1,3 +1,5 @@
+include_recipe "common_build"
+
 case node[:platform]
 when "debian","ubuntu"
   execute "apt-get update"
@@ -25,7 +27,7 @@ when "debian","ubuntu"
     cwd "/tmp/#{node[:rubybuild][:basename]}"
   end
 
-  execute "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} --maintainer=mathias.meyer@scalarium.com --pkggroup=ruby --pkglicense='Ruby License' make all install" do
+  execute "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} --maintainer=mathias.meyer@scalarium.com --pkggroup=ruby --pkglicense='Ruby License' make all install && cp *.deb #{node[:common_build][:directory]}" do
     cwd "/tmp/#{node[:rubybuild][:basename]}"
   end
 
@@ -78,7 +80,7 @@ when "centos","redhat","scientific","oracle","amazon"
       mkdir /tmp/ruby-install-dir
       make all install DESTDIR=/tmp/ruby-install-dir
       fpm -s dir -t rpm -n ruby19 -v #{node[:rubybuild][:version]} --iteration #{node[:rubybuild][:pkgrelease]} -C /tmp/ruby-install-dir -p #{node[:rubybuild][:rpm]} -m "<daniel.huesch@scalarium.com>" -a "#{node[:kernel][:machine]}" usr
-
+      cp *.rpm #{node[:common_build][:directory]}
       rm -rf /tmp/ruby-install-dir
     EOH
     not_if do

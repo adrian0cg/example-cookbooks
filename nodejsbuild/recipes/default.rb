@@ -1,3 +1,5 @@
+include_recipe "common_build"
+
 case node[:platform]
 when "debian","ubuntu"
   execute "apt-get update"
@@ -63,7 +65,7 @@ node[:nodejsbuild][:versions_to_build].each do |version|
 
   case node[:platform]
   when "debian","ubuntu"
-    execute "checkinstall -y -D --pkgname=nodejs --pkgversion=#{version} --pkgrelease=#{node[:nodejsbuild][:pkgrelease]} --maintainer=daniel.huesch@scalarium.com --pkglicense='node.js License' make all install" do
+    execute "checkinstall -y -D --pkgname=nodejs --pkgversion=#{version} --pkgrelease=#{node[:nodejsbuild][:pkgrelease]} --maintainer=daniel.huesch@scalarium.com --pkglicense='node.js License' make all install && cp *.deb #{node[:common_build][:directory]}" do
       cwd "/tmp/node-v#{version}"
     end
   when "centos","redhat","amazon","scientific","oracle","fedora"
@@ -73,6 +75,7 @@ node[:nodejsbuild][:versions_to_build].each do |version|
         mkdir /tmp/nodejs-install-dir
         make all install DESTDIR=/tmp/nodejs-install-dir
         fpm -s dir -t rpm -n nodejs -v #{version} -C /tmp/nodejs-install-dir -p #{rpm} --iteration #{node[:rubybuild][:pkgrelease]} -m "<daniel.huesch@scalarium.com>" -a "#{node[:kernel][:machine]}" --license 'node.js License' --vendor "Peritor GmbH" --url "http://nodejs.org" usr
+        cp *.rpm #{node[:common_build][:directory]}
         rm -rf /tmp/nodejs-install-dir
       EOH
     end
