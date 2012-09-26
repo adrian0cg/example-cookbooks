@@ -3,6 +3,7 @@ default[:buildengine][:arch] = node[:kernel][:machine] == 'x86_64' ? 'amd64' : '
 default[:buildengine][:monit] = {}
 default[:buildengine][:monit][:name] = 'monit'
 default[:buildengine][:monit][:version] = '5.5'
+#default[:buildengine][:monit][:patchlevel] = 'p999'
 default[:buildengine][:monit][:download_base_url] = 'http://mmonit.com/monit/dist/'
 default[:buildengine][:monit][:download_package] = 'monit-5.5.tar.gz'
 default[:buildengine][:monit][:unpacked_dir] = 'monit-5.5'
@@ -13,6 +14,7 @@ default[:buildengine][:monit][:deb] = "#{node[:buildengine][:monit][:name]}_#{no
 default[:buildengine][:monit][:package_release] = '0'
 default[:buildengine][:monit][:package_group] = 'admin'
 default[:buildengine][:monit][:package_maintainer] = 'mathias.meyer@scalarium.com'
+#default[:buildengine][:monit][:package_license] = 'Some Fantasy License'
 default[:buildengine][:s3] = {}
 default[:buildengine][:s3][:upload] = false
 default[:buildengine][:s3][:bucket] = ''
