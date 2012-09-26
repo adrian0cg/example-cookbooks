@@ -1,0 +1,21 @@
+default[:buildengine] = {}
+default[:buildengine][:arch] = node[:kernel][:machine] == 'x86_64' ? 'amd64' : 'i386'
+default[:buildengine][:monit] = {}
+default[:buildengine][:monit][:name] = 'monit'
+default[:buildengine][:monit][:version] = '5.5'
+default[:buildengine][:monit][:download_base_url] = 'http://mmonit.com/monit/dist/'
+default[:buildengine][:monit][:download_package] = 'monit-5.5.tar.gz'
+default[:buildengine][:monit][:unpacked_dir] = 'monit-5.5'
+default[:buildengine][:monit][:build_requirements] = 'checkinstall libpam0g-dev make gcc'
+default[:buildengine][:monit][:prefix] = '/usr/local'
+default[:buildengine][:monit][:configure_options] = '--enable-optimized'
+default[:buildengine][:monit][:deb] = "#{node[:buildengine][:monit][:name]}_#{node[:buildengine][:monit][:version]}-#{node[:buildengine][:monit][:patchlevel]}.#{node[:buildengine][:monit][:package_release]}_#{node[:buildengine][:arch]}.deb"
+default[:buildengine][:monit][:package_release] = '0'
+default[:buildengine][:monit][:package_group] = 'admin'
+default[:buildengine][:monit][:package_maintainer] = 'mathias.meyer@scalarium.com'
+default[:buildengine][:s3] = {}
+default[:buildengine][:s3][:upload] = false
+default[:buildengine][:s3][:bucket] = ''
+default[:buildengine][:s3][:path] = "#{node[:platform]}/#{node[:platform_version]}"
+default[:buildengine][:s3][:aws_access_key] = ""
+default[:buildengine][:s3][:aws_secret_access_key] = ""
