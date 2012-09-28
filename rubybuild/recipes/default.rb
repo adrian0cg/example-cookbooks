@@ -58,7 +58,7 @@ when "centos","redhat","scientific","oracle","amazon"
 
   gem_package "fpm"
 
-  %w{rpm-build libffi-devel readline-devel libyaml-devel}.each do |pkg|
+  %w{rpm-build libffi-devel readline-devel libyaml-devel libyaml}.each do |pkg|
     package pkg
   end
 
@@ -70,7 +70,7 @@ when "centos","redhat","scientific","oracle","amazon"
     cwd "/tmp"
   end
 
-  execute "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]}" do
+  execute "./configure --prefix=#{node[:rubybuild][:prefix]} --with-opt-dir=/usr/lib #{node[:rubybuild][:configure]}" do
     cwd "/tmp/#{node[:rubybuild][:basename]}"
   end
 
