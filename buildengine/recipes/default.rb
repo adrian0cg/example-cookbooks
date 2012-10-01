@@ -1,110 +1,115 @@
-package_to_build = :monit
+packages_to_build = node[:buildengine][:packages_to_build]
 
-execute 'apt-get update -qy'
-execute 'apt-get upgrade -qy'
+if not packages_to_build.nil? and not packages_to_build.empty?
+  execute 'apt-get update -qy'
+  execute 'apt-get upgrade -qy'
 
-package 's3cmd' do
-  only_if do
-    node[:buildengine][:s3][:upload]
-  end
-end
-
-package "checkinstall"
-package "libpam0g-dev"
-package "make"
-package "gcc"
-
-def manage_test_user (action, cwd=nil)
-  user node[:buildengine][:monit][:user] do
-    comment 'user for running build tests'
-    home cwd unless cwd.nil? || cwd.empty?
-    shell '/bin/bash'
-  end.run_action(action)
-end
-
-def perform (cmd, options={})
-  options = {
-    :cwd => '/tmp',
-    :user => node[:buildengine][:monit][:user]
-  }.update(options)
-
-  execute cmd do
-    cwd options[:cwd]
-    unless options[:user] == 'root'
-      environment ({'HOME' => options[:cwd]})
-      user options[:user]
-    end
-  end
-end
-
-Dir.mktmpdir do |build_base_dir|
-  manage_test_user(:create, build_base_dir)
-
-  directory build_base_dir do
-    owner node[:buildengine][:monit][:user]
-    action :create
-  end
-
-  remote_file "#{build_base_dir}/#{node[:buildengine][:monit][:download_package]}" do
-    source "#{node[:buildengine][:monit][:download_base_url]}/#{node[:buildengine][:monit][:download_package]}"
-    owner node[:buildengine][:monit][:user]
-  end
-
-  perform "tar xvfz #{node[:buildengine][:monit][:download_package]}",
-          :cwd => build_base_dir
-
-  build_dir = "#{build_base_dir}/#{node[:buildengine][:monit][:unpacked_dir]}
-  perform "./configure --prefix=#{node[:buildengine][::monit][:prefix]} \
-                       #{node[:buildengine][:monit][:configure_options]}",
-           :cwd => build_dir
-
-  perform "make -j #{node['cpu']['total']}", :cwd => build_dir
-
-  pkgrelease = "#{node[:buildengine][:monit][:package_release]}"
-  if node[:buildengine][:monit].attribute?(:patchlevel)
-    pkgrelease = "#{node[:buildengine][:monit][:patchlevel]}.#{node[:buildengine][:monit][:package_release]}"
-  end
-
-  pkglicense = ''
-  if node[:buildengine][:monit].attribute?(:package_license)
-    pkglicense = "--pkglicense=#{node[:buildengine][:monit][:package_license]}"
-  end
-
-  perform "checkinstall -y -D --pkgname=#{node[:buildengine][:monit][:name]} \
-                        --pkgversion=#{node[:buildengine][:monit][:version]} \
-                        --pkgrelease=#{pkgrelease} \
-                        --maintainer=#{node[:buildengine][:monit][:package_maintainer]} \
-                        --pkggroup=#{node[:buildengine][:monit][package_group]} \
-                        #{pkglicense} make all install", :cwd => build_dir
-
-  template "#{build_base_dir}/.s3cfg" do
-    source "s3cfg.erb"
+  package 's3cmd' do
     only_if do
       node[:buildengine][:s3][:upload]
     end
   end
 
-  execute "s3cmd -c #{build_base_dir}/.s3cfg put --acl-public \
-                 --guess-mime-type #{node[:buildengine][packe_to_build][:deb]} \
-                 s3://#{node[:buildengine][:s3][:bucket]}/#{node[:buildengine][:s3][:path]}/" do
-    cwd build_dir
-    only_if do
-      node[:buildengine][:s3][:upload]
+  packages_to_build.each do |pkg_to_build|
+  #node[:buildengine][:packages].keys.each do |pkg_to_build|
+    node_pkg = node[:buildengine][:packages][pkg_to_build]
+
+    node_pkg[:build_requirements].each do |required_pkg|
+      package required_pkg
     end
-  end
 
-  file "#{build_base_dir}/.s3cfg" do
-    action :delete
-    backup false
-  end
+    build_base_dir = Dir.mktmpdir
 
-  directory build_base_dir do
-    recursive true
-    action :delete
-    only_if do
-      node[:buildengine][:cleanup]
+    username = node_pkg[:user]
+
+    user username do
+      comment 'user for running build tests'
+      home build_base_dir
+      shell '/bin/bash'
+    end
+
+    directory build_base_dir do
+      owner username
+      action :create
+    end
+
+    remote_file "#{build_base_dir}/#{node_pkg[:download_package]}" do
+      source "#{node_pkg[:download_base_url]}/#{node_pkg[:download_package]}"
+      owner username
+    end
+
+    execute "tar xvfz #{node_pkg[:download_package]}" do
+      user username
+      cwd build_base_dir
+    end
+
+    build_dir = "#{build_base_dir}/#{node_pkg[:unpacked_dir]}"
+
+    execute "./configure --prefix=#{node_pkg[:prefix]} \
+			 #{node_pkg[:configure_options]}" do
+      user username
+      cwd build_dir
+    end
+
+    execute "make -j #{node['cpu']['total']}" do
+      user username
+      cwd build_dir
+    end
+
+    pkgrelease = "#{node_pkg[:package_release]}"
+    if node_pkg.attribute?(:patchlevel)
+      pkgrelease = "#{node_pkg[:patchlevel]}.#{node_pkg[:package_release]}"
+    end
+
+    pkglicense = ''
+    if node_pkg.attribute?(:package_license)
+      pkglicense = "--pkglicense=#{node_pkg[:package_license]}"
+    end
+
+    execute "checkinstall -y -D --pkgname=#{node_pkg[:name]} \
+			  --pkgversion=#{node_pkg[:version]} \
+			  --pkgrelease=#{pkgrelease} \
+			  --maintainer=#{node_pkg[:package_maintainer]} \
+			  --pkggroup=#{node_pkg[:package_group]} \
+			  #{pkglicense} --pakdir=#{node_pkg[:package_store_dir]} make install" do
+      user 'root'
+      cwd build_dir
+    end
+
+    template "#{build_base_dir}/.s3cfg" do
+      source "s3cfg.erb"
+      only_if do
+	node[:buildengine][:s3][:upload]
+      end
+    end
+
+    execute "s3cmd -c #{build_base_dir}/.s3cfg put --acl-public \
+		   --guess-mime-type #{node_pkg[:deb]} \
+		   s3://#{node[:buildengine][:s3][:bucket]}/#{node[:buildengine][:s3][:path]}/" do
+      cwd node_pkg[:package_store_dir]
+      only_if do
+	node[:buildengine][:s3][:upload]
+      end
+    end
+
+    file "#{build_base_dir}/.s3cfg" do
+      action :delete
+      backup false
+    end
+
+    directory build_base_dir do
+      recursive true
+      action :delete
+      only_if do
+	node[:buildengine][:cleanup]
+      end
+    end
+
+    user username do
+      action :remove
+      only_if do
+	node[:buildengine][:cleanup]
+      end
     end
   end
 end
-
-manage_test_user(:remove) if node[:buildengine][:cleanup]
