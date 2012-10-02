@@ -1,6 +1,6 @@
 packages_to_build = node[:buildengine][:packages_to_build]
 
-if not packages_to_build.nil? and not packages_to_build.empty?
+if (not packages_to_build.nil?) and (not packages_to_build.empty?)
   execute 'apt-get update -qy'
   execute 'apt-get upgrade -qy'
 
@@ -11,7 +11,8 @@ if not packages_to_build.nil? and not packages_to_build.empty?
   end
 
   packages_to_build.each do |pkg_to_build|
-    if node[:buildengine][:packages].has_key? pkg_to_build
+    if node[:buildengine].has_key? :packages and
+       node[:buildengine][:packages].has_key? pkg_to_build
       node_pkg = node[:buildengine][:packages][pkg_to_build]
 
       node_pkg[:build_requirements].each do |required_pkg|
