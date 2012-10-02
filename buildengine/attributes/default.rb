@@ -12,7 +12,6 @@ default[:buildengine][:packages][:monit][:unpacked_dir] = 'monit-5.5'
 default[:buildengine][:packages][:monit][:build_requirements] = ['checkinstall', 'libpam0g-dev', 'make', 'gcc']
 default[:buildengine][:packages][:monit][:prefix] = '/usr/local'
 default[:buildengine][:packages][:monit][:configure_options] = '--enable-optimized'
-default[:buildengine][:packages][:monit][:deb] = "#{node[:buildengine][:packages][:monit][:name]}_#{node[:buildengine][:packages][:monit][:version]}-#{node[:buildengine][:packages][:monit][:patchlevel]}.#{node[:buildengine][:packages][:monit][:package_release]}_#{node[:buildengine][:arch]}.deb"
 default[:buildengine][:packages][:monit][:package_release] = '0'
 default[:buildengine][:packages][:monit][:package_group] = 'admin'
 default[:buildengine][:packages][:monit][:package_maintainer] = 'development@scalarium.com'

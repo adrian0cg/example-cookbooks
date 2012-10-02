@@ -67,6 +67,8 @@ if (not packages_to_build.nil?) and (not packages_to_build.empty?)
 	pkglicense = "--pkglicense=#{node_pkg[:package_license]}"
       end
 
+      deb_package_name = "#{node_pkg[:name]}_#{node_pkg[:version]}-#{pkgrelease}_#{node[:buildengine][:arch]}.deb"
+
       execute "checkinstall -y -D --pkgname=#{node_pkg[:name]} \
 			    --pkgversion=#{node_pkg[:version]} \
 			    --pkgrelease=#{pkgrelease} \
@@ -85,7 +87,7 @@ if (not packages_to_build.nil?) and (not packages_to_build.empty?)
       end
 
       execute "s3cmd -c #{build_base_dir}/.s3cfg put --acl-public \
-		     --guess-mime-type #{node_pkg[:deb]} \
+		     --guess-mime-type #{deb_package_name} \
 		     s3://#{node[:buildengine][:s3][:bucket]}/#{node[:buildengine][:s3][:path]}/" do
 	cwd node_pkg[:package_store_dir]
 	only_if do
@@ -113,7 +115,7 @@ if (not packages_to_build.nil?) and (not packages_to_build.empty?)
 	end
       end
 
-      file "#{node_pkg[:package_store_dir]}/#{node_pkg[:deb]}" do
+      file "#{node_pkg[:package_store_dir]}/#{deb_package_name}" do
 	action :delete
 	backup false
         only_if do
