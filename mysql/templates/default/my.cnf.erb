@@ -1,20 +1,20 @@
 # custom my.cnf that overrides the default Scalarium configuration
 
 [client]
-port            = 3306
-socket          = /var/run/mysqld/mysqld.sock
+port            = <%= node[:mysql][:port] %>
+socket          = <%= node[:mysql][:socket] %>
 
 [mysqld_safe]
-socket          = /var/run/mysqld/mysqld.sock
+socket          = <%= node[:mysql][:socket] %>
 nice            = 0
 
 [mysqld]
 user            = mysql
-pid-file        = /var/run/mysqld/mysqld.pid
-socket          = /var/run/mysqld/mysqld.sock
-port            = 3306
-basedir         = /usr
-datadir         = <%= @node[:mysql][:datadir] %>
+pid-file        = <%= node[:mysql][:pid_file] %>
+socket          = <%= node[:mysql][:socket] %>
+port            = <%= node[:mysql][:port] %>
+basedir         = <%= node[:mysql][:basedir] %>
+datadir         = <%= node[:mysql][:datadir] %>
 tmpdir          = /tmp
 
 default-storage-engine=innodb
@@ -22,7 +22,7 @@ skip-external-locking
 skip-name-resolve
 skip-federated
 
-bind-address            = <%= @node[:mysql][:bind_address] %>
+bind-address            = <%= node[:mysql][:bind_address] %>
 
 #
 # * Fine Tuning
@@ -33,26 +33,26 @@ bind-address            = <%= @node[:mysql][:bind_address] %>
 myisam-recover          = BACKUP
 
 #thread_concurrency     = 10
-max_allowed_packet      = 64M
-thread_stack            = 192K
-thread_cache_size       = 8
-key_buffer              = <%= @node[:mysql][:tunable][:key_buffer] %>
-max_connections         = <%= @node[:mysql][:tunable][:max_connections] %>
-wait_timeout            = <%= @node[:mysql][:tunable][:wait_timeout] %>
-net_read_timeout        = <%= @node[:mysql][:tunable][:net_read_timeout] %>
-net_write_timeout       = <%= @node[:mysql][:tunable][:net_write_timeout] %>
-back_log                = <%= @node[:mysql][:tunable][:back_log] %>
-table_cache             = <%= @node[:mysql][:tunable][:table_cache] %>
-max_heap_table_size     = <%= @node[:mysql][:tunable][:max_heap_table_size] %>
+max_allowed_packet      = <%= node[:mysql][:tunable][:max_allowed_packet] %>
+thread_stack            = <%= node[:mysql][:tunable][:thread_stack] %>
+thread_cache_size       = <%= node[:mysql][:tunable][:thread_cache_size] %>
+key_buffer              = <%= node[:mysql][:tunable][:key_buffer] %>
+max_connections         = <%= node[:mysql][:tunable][:max_connections] %>
+wait_timeout            = <%= node[:mysql][:tunable][:wait_timeout] %>
+net_read_timeout        = <%= node[:mysql][:tunable][:net_read_timeout] %>
+net_write_timeout       = <%= node[:mysql][:tunable][:net_write_timeout] %>
+back_log                = <%= node[:mysql][:tunable][:back_log] %>
+table_cache             = <%= node[:mysql][:tunable][:table_cache] %>
+max_heap_table_size     = <%= node[:mysql][:tunable][:max_heap_table_size] %>
 
 #
 # * InnoDB Tuning
 #
 
-innodb_buffer_pool_size = 1200M
-innodb_additional_mem_pool_size = 20M
-innodb_flush_log_at_trx_commit = 2
-innodb_lock_wait_timeout = 50
+innodb_buffer_pool_size         = <%= node[:mysql][:tunable][:innodb_buffer_pool_size] %>
+innodb_additional_mem_pool_size = <%= node[:mysql][:tunable][:innodb_additional_mem_pool_size] %>
+innodb_flush_log_at_trx_commit  = <%= node[:mysql][:tunable][:innodb_flush_log_at_trx_commit] %>
+innodb_lock_wait_timeout        = <%= node[:mysql][:tunable][:innodb_lock_wait_timeout] %>
 #innodb_log_file_size=250M
 #innodb_log_buffer_size=8M
 
@@ -62,16 +62,16 @@ innodb_lock_wait_timeout = 50
 #
 
 # Query Cache
-query_cache_limit      = 2M
-query_cache_size       = 64M
-query_cache_type       = 1
+query_cache_limit      = <%= node[:mysql][:tunable][:query_cache_limit] %>
+query_cache_size       = <%= node[:mysql][:tunable][:query_cache_size] %>
+query_cache_type       = <%= node[:mysql][:tunable][:query_cache_type] %>
 
 
 #
 # * Slow Query Logging
 #
-log_slow_queries       = /var/log/mysql/mysql-slow.log
-long_query_time = 2
+log_slow_queries       = <%= node[:mysql][:tunable][:log_slow_queries] %>
+long_query_time = <%= node[:mysql][:tunable][:long_query_time] %>
 log-queries-not-using-indexes
 
 # The following can be used as easy to replay backup logs or for replication.
