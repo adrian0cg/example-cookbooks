@@ -112,6 +112,14 @@ if (not packages_to_build.nil?) and (not packages_to_build.empty?)
 	  node[:buildengine][:cleanup]
 	end
       end
+
+      file "#{node_pkg[:package_store_dir]}/#{node_pkg[:deb]}" do
+	action :delete
+	backup false
+        only_if do
+          node[:buildengine][:cleanup]
+        end
+      end
     end
   end
 end
