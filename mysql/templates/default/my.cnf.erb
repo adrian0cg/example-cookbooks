@@ -98,7 +98,13 @@ default-character-set   = utf8
 [isamchk]
 key_buffer              = 16M
 
+<% case node['platform'] -%>
+<% when "centos", "redhat", "suse", "scientific", "amazon" -%>
+# We do not include any additional configuration directories for
+# Redhat based systems.
+<% else -%>
 # * IMPORTANT: Additional settings that can override those from this file!
 #   The files must end with '.cnf', otherwise they'll be ignored.
 #
-<%= "!includedir /etc/mysql/conf.d/" unless ["centos", "redhat","suse"].include?(@node[:platform]) %>
+!includedir /etc/mysql/conf.d/
+<% end -%>
