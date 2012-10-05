@@ -56,15 +56,12 @@ if (not packages_to_build.nil?) and (not packages_to_build.empty?)
         end
       end
 
-      pkgrelease = "#{node_pkg[:package_release]}"
-      if node_pkg.attribute?(:patchlevel)
-        pkgrelease = "#{node_pkg[:patchlevel]}.#{node_pkg[:package_release]}"
-      end
+      pkgrelease = node_pkg.attribute?(:patchlevel) ? \
+        "#{node_pkg[:patchlevel]}.#{node_pkg[:package_release]}" : \
+        "#{node_pkg[:package_release]}"
 
-      pkglicense = ''
-      if node_pkg.attribute?(:package_license)
-        pkglicense = "--pkglicense=#{node_pkg[:package_license]}"
-      end
+      pkglicense = node_pkg.attribute?(:package_license) ? \
+        pkglicense = "--pkglicense=#{node_pkg[:package_license]}" : ''
 
       deb_package_name = "#{node_pkg[:name]}_#{node_pkg[:version]}-#{pkgrelease}_#{node[:buildengine][:arch]}.deb"
 
@@ -73,21 +70,22 @@ if (not packages_to_build.nil?) and (not packages_to_build.empty?)
                             --pkgrelease=#{pkgrelease} \
                             --maintainer=#{node_pkg[:package_maintainer]} \
                             --pkggroup=#{node_pkg[:package_group]} \
-                            #{pkglicense} --pakdir=#{node_pkg[:package_store_dir]} #{node_pkg[:install_cmd]}" do
+                            --pakdir=#{node_pkg[:package_store_dir]} \
+                            #{pkglicense} #{node_pkg[:install_cmd]}" do
         user 'root'
         cwd build_dir
       end
 
       template "#{build_base_dir}/.s3cfg" do
-        source "s3cfg.erb"
+        source 's3cfg.erb'
         only_if do
           node[:buildengine][:s3][:upload]
         end
       end
 
       execute "s3cmd -c #{build_base_dir}/.s3cfg put --acl-public \
-         --guess-mime-type #{deb_package_name} \
-         s3://#{node[:buildengine][:s3][:bucket]}/#{node[:buildengine][:s3][:path]}/" do
+                     --guess-mime-type #{deb_package_name} \
+                     s3://#{node[:buildengine][:s3][:bucket]}/#{node[:buildengine][:s3][:path]}/" do
         cwd node_pkg[:package_store_dir]
         only_if do
           node[:buildengine][:s3][:upload]
