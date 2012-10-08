@@ -1,6 +1,6 @@
 packages_to_build = node[:buildengine][:packages_to_build]
 
-if (not packages_to_build.nil?) and (not packages_to_build.empty?)
+unless packages_to_build.nil? or packages_to_build.empty?
   execute 'apt-get update -qy'
   execute 'apt-get upgrade -qy'
 
@@ -39,7 +39,7 @@ if (not packages_to_build.nil?) and (not packages_to_build.empty?)
         owner username
       end
 
-      execute "tar xvfz #{node_pkg[:download_package]}" do
+      execute "#{node_pkg[:unpack_cmd]} #{node_pkg[:download_package]}" do
         user username
         cwd build_base_dir
       end
