@@ -11,7 +11,7 @@ default[:buildengine][:packages][:monit][:unpack_cmd] = 'tar xvfz'
 default[:buildengine][:packages][:monit][:user] = 'monitbuild'
 default[:buildengine][:packages][:monit][:unpacked_dir] = 'monit-5.5'
 default[:buildengine][:packages][:monit][:build_requirements] = ['checkinstall', 'libpam0g-dev', 'make', 'gcc']
-default[:buildengine][:packages][:monit][:configure_opts_addon] = node[:platform_version].to_f >= '11.10'.to_f && node[:kernel][:machine] == 'x86_64' ? '--with-ssl-lib-dir=/lib/x86_64-linux-gnu' : ''
+default[:buildengine][:packages][:monit][:configure_opts_addon] = node[:platform_version].to_f >= '11.10'.to_f ? ( node[:kernel][:machine] == 'x86_64' ? '--with-ssl-lib-dir=/lib/x86_64-linux-gnu' : '--with-ssl-lib-dir=/usr/lib/i386-linux-gnu' )  : ''
 default[:buildengine][:packages][:monit][:configure_cmd] = "./configure --prefix=/usr/local --enable-optimized #{node[:buildengine][:packages][:monit][:configure_opts_addon]}"
 default[:buildengine][:packages][:monit][:compile_cmd] = "make -j #{node['cpu']['total']}"
 #default[:buildengine][:packages][:monit][:test_cmd] = 'make test'
