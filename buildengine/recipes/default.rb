@@ -71,6 +71,7 @@ unless packages_to_build.nil? or packages_to_build.empty?
                             --maintainer=#{node_pkg[:package_maintainer]} \
                             --pkggroup=#{node_pkg[:package_group]} \
                             --pakdir=#{node_pkg[:package_store_dir]} \
+                            --install=no \
                             #{pkglicense} #{node_pkg[:install_cmd]}" do
         user 'root'
         cwd build_dir
