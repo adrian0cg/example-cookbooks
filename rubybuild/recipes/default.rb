@@ -54,15 +54,20 @@ Dir.mktmpdir do |target_dir|
   perform "tar xvfj #{node[:rubybuild][:basename]}.tar.bz2", :cwd => target_dir
 
   build_dir = "#{target_dir}/#{node[:rubybuild][:basename]}"
+
+  Chef::Log.info 'Buiding package'
   perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]} > /tmp/configure_#{current_time} 2>&1", :cwd => build_dir
   perform "make -j #{node["cpu"]["total"]} > /tmp/make_#{current_time} 2>&1", :cwd => build_dir
 
+  Chef::Log.info 'Installing package'
   # this must run as root
   perform "make -j #{node["cpu"]["total"]} install > /tmp/install_#{current_time} 2>&1", :cwd => build_dir, :user => "root"
 
+  Chef::Log.info "Running package's test suite"
   # this must NOT run as root
   perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1", :cwd => build_dir
 
+  Chef::Log.info 'Creating deb package'
   perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} \
                         --pkgrelease=#{node[:rubybuild][:patch]}.#{node[:rubybuild][:pkgrelease]} \
                         --maintainer=#{node[:rubybuild][:maintainer]} --pkggroup=ruby --pkglicense='Ruby License' \
