@@ -56,16 +56,16 @@ Dir.mktmpdir do |target_dir|
   build_dir = "#{target_dir}/#{node[:rubybuild][:basename]}"
 
   Chef::Log.info 'Buiding package'
-  perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]} > /tmp/configure_#{current_time} 2>&1", :cwd => build_dir
-  perform "make -j #{node["cpu"]["total"]} > /tmp/make_#{current_time} 2>&1", :cwd => build_dir
+  perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]} > /tmp/#{build_dir}/configure_#{current_time} 2>&1", :cwd => build_dir
+  perform "make -j #{node["cpu"]["total"]} > /tmp/#{build_dir}/make_#{current_time} 2>&1", :cwd => build_dir
 
   Chef::Log.info 'Installing package'
   # this must run as root
-  perform "make -j #{node["cpu"]["total"]} install > /tmp/install_#{current_time} 2>&1", :cwd => build_dir, :user => "root"
+  perform "make -j #{node["cpu"]["total"]} install > /tmp/#{build_dir}/install_#{current_time} 2>&1", :cwd => build_dir, :user => "root"
 
   Chef::Log.info "Running package's test suite"
   # this must NOT run as root
-  perform "make -j #{node["cpu"]["total"]} check > /tmp/test_#{current_time} 2>&1", :cwd => build_dir
+  perform "make -j #{node["cpu"]["total"]} check > /tmp/#{build_dir}/test_#{current_time} 2>&1", :cwd => build_dir
 
   Chef::Log.info 'Creating deb package'
   perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} \
@@ -77,7 +77,15 @@ Dir.mktmpdir do |target_dir|
                         :cwd => build_dir,
                         :user => 'root'
 
+  Chef::Log.info 'Coping deb package into package dir'
+  pkg_dir = "/tmp/rubybuild/#{node[platform]}/#{node[:platform_version]}"
+  FileUtils.mkdir_p pkg_dir
+  deb_file = Dir.glob("#{build_dir}/*/*").select{|e| e =~ /.*deb$/}
+  FileUtils.mv deb_file, pkg_dir
+
   if node[:rubybuild][:s3][:upload]
+    # TODO: use aws_sdk for this
+    Chef::Log.info 'Uploading package into S3 bucket'
     package 's3cmd'
 
     template '/tmp/.s3cfg' do
