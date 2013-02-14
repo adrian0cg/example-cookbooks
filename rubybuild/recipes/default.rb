@@ -80,8 +80,8 @@ Dir.mktmpdir do |target_dir|
   Chef::Log.info 'Coping deb package into package dir'
   pkg_dir = "/tmp/rubybuild/#{node[:platform]}/#{node[:platform_version]}"
   FileUtils.mkdir_p pkg_dir
-  Chef::Log.info "Copying  #{deb_file} into #{pkg_dir}"
   deb_file = Dir.glob("#{build_dir}/*/*").select{|e| e =~ /.*deb$/}
+  Chef::Log.info "Copying  #{deb_file} into #{pkg_dir}"
   FileUtils.mv deb_file, pkg_dir
 
   if node[:rubybuild][:s3][:upload]
