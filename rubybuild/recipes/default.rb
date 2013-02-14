@@ -56,16 +56,16 @@ Dir.mktmpdir do |target_dir|
   build_dir = "#{target_dir}/#{node[:rubybuild][:basename]}"
 
   Chef::Log.info 'Buiding package'
-  perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]} > #{build_dir}/configure_#{current_time} 2>&1", :cwd => build_dir
-  perform "make -j #{node["cpu"]["total"]} > /tmp/#{build_dir}/make_#{current_time} 2>&1", :cwd => build_dir
+  perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]} > #{build_dir}/../configure_#{current_time} 2>&1", :cwd => build_dir
+  perform "make -j #{node["cpu"]["total"]} > #{build_dir}/../make_#{current_time} 2>&1", :cwd => build_dir
 
   Chef::Log.info 'Installing package'
   # this must run as root
-  perform "make -j #{node["cpu"]["total"]} install > /tmp/#{build_dir}/install_#{current_time} 2>&1", :cwd => build_dir, :user => "root"
+  perform "make -j #{node["cpu"]["total"]} install > #{build_dir}/../install_#{current_time} 2>&1", :cwd => build_dir, :user => "root"
 
   Chef::Log.info "Running package's test suite"
   # this must NOT run as root
-  perform "make -j #{node["cpu"]["total"]} check > /tmp/#{build_dir}/test_#{current_time} 2>&1", :cwd => build_dir
+  perform "make -j #{node["cpu"]["total"]} check > #{build_dir}/../test_#{current_time} 2>&1", :cwd => build_dir
 
   Chef::Log.info 'Creating deb package'
   perform "checkinstall -y -D --pkgname=ruby1.9 --pkgversion=#{node[:rubybuild][:version]} \
