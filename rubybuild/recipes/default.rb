@@ -56,7 +56,7 @@ Dir.mktmpdir do |target_dir|
   build_dir = "#{target_dir}/#{node[:rubybuild][:basename]}"
 
   Chef::Log.info 'Buiding package'
-  perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]} > /tmp/#{build_dir}/configure_#{current_time} 2>&1", :cwd => build_dir
+  perform "./configure --prefix=#{node[:rubybuild][:prefix]} #{node[:rubybuild][:configure]} > #{build_dir}/configure_#{current_time} 2>&1", :cwd => build_dir
   perform "make -j #{node["cpu"]["total"]} > /tmp/#{build_dir}/make_#{current_time} 2>&1", :cwd => build_dir
 
   Chef::Log.info 'Installing package'
