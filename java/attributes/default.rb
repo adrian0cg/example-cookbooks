@@ -29,15 +29,15 @@ when "centos","redhat","fedora"
 when "freebsd"
   default['java']['java_home'] = "/usr/local/openjdk#{java['jdk_version']}"
 when "arch"
-  default['java']['java_home'] = "//usr/lib/jvm/java-#{java['jdk_version']}-openjdk"
+  default['java']['java_home'] = "/usr/lib/jvm/java-#{java['jdk_version']}-openjdk"
 else
   default['java']['java_home'] = "/usr/lib/jvm/default-java"
 end
 
 # jdk6 attributes
 # x86_64
-default['java']['jdk']['6']['x86_64']['url'] = 'http://download.oracle.com/otn-pub/java/jdk/6u30-b12/jdk-6u30-linux-x64.bin'
-default['java']['jdk']['6']['x86_64']['checksum'] = '928220f4e46c5dabef0440791c48023945629d8a23998e072157e04960d8a759'
+default['java']['jdk']['6']['x86_64']['url'] = 'http://download.oracle.com/otn-pub/java/jdk/6u43-b01/jdk-6u43-linux-x64.bin'
+default['java']['jdk']['6']['x86_64']['checksum'] = '80212f7748c2671b89b6085000717c747851db004409dce3bb97f3a2aeb91cdd'
 
 # i586
 default['java']['jdk']['6']['i586']['url'] = 'http://download.oracle.com/otn-pub/java/jdk/6u30-b12/jdk-6u30-linux-i586.bin'
